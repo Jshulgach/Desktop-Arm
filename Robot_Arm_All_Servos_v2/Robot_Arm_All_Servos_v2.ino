@@ -4,10 +4,17 @@ Robot Arm Sweep and Retract_1_25_20
 
 Moves all servos within a system based on positional values stored in a multidimmensional array. The position array is 6 rows long, 
 and the length is determined by duration of the entire servo motion set. In this case, 6 servos will create a row each for
-positional array correspondign to that servo. In the actionArray variable, information pertaining to certain "actions" are 
-collected with the time to start movement, name of servo, start/end positions and start/end times. The duration of the servo 
-action, along with the frequency of data being written to the servos, creates a "linspace" of numbers interpolatd from starting to
-ending positions within the array, according to when the action time happens within the overal duration of the actions
+positional array correspondign to that servo. 
+
+6 unique servos = "Torso","Shoulder","Elbow","Claw", "WristRot","WristBend"
+
+total action list duration (from latest action time plus action duration)= 11 + 1 = 12 seconds, frequency = 10Hz
+size(pos_Array) = [6 rows][120 columns]
+
+
+In the actionArray variable, information pertaining to certain "actions" are collected with the time to start movement, name of servo,
+start/end positions and start/end times. The duration of the servo action, along with the frequency of data being written to the servos, creates a "linspace" of numbers interpolatd from starting to
+ending positions within the array, according to when the action time happens within the overal duration of the actions.
 
 Modified 26th January 2020
 by Jonathan Shulgach
