@@ -1,0 +1,20 @@
+<launch>
+ <!-- ROS serial  Node-->
+  <node name="serial_node" pkg="rosserial_python" type="serial_node.py">
+            <param name="port" value="/dev/ttyACM0"/>
+            <param name="baud" value="57600" />
+    </node>
+
+
+ <!-- joy node -->
+  <node respawn="true" pkg="joy"
+        type="joy_node" name="desktop_arm_joy" >
+    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="deadzone" value="0.12" />
+  </node>
+
+ <!-- Axes -->
+  <param name="axis_linear" value="0" type="int"/>
+  <param name="axis_angular" value="1" type="int"/>
+  <node pkg="desktop_arm_joy" type="desktop_arm_teleop_joy.py" name="teleop_axes"/>
+</launch>
