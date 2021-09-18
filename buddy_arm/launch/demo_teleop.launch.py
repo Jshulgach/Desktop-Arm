@@ -153,7 +153,7 @@ def generate_launch_description():
     node_list = [
         ros2_control_node,
         robot_state_pub_node,
-        rviz_node,
+        #rviz_node,
         joint_state_broadcaster_spawner,
         robot_controller_spawner,
         static_tf,
