@@ -9,7 +9,7 @@ Installation and Quick Start instructions for the Desktop Robot Arm project runn
 
 ## Installation:
 <a name="installation"/>
-These instructions are dependend on running Ubuntu server on a Raspberry Pi 4. If starting with a brand new Raspi 4 and a blank microSD card, start with step 0 if you need to set up hardware.
+These instructions were tested on Ubuntu server running on a Raspberry Pi 4. If starting with a brand new Raspi and a blank microSD card, start with step 0 if you need to set up hardware.
 
 ---
 
