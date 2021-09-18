@@ -20,17 +20,23 @@ find_package(rclcpp_components REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(control_msgs REQUIRED)
-find_package(control_toolbox REQUIRED)
-find_package(moveit_msgs REQUIRED)
+#find_package(control_toolbox REQUIRED)
+#find_package(moveit_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(moveit_ros_planning REQUIRED)
-find_package(moveit_ros_planning_interface REQUIRED)
-find_package(rosidl_default_runtime REQUIRED)
+#find_package(moveit_ros_planning REQUIRED)
+#find_package(moveit_ros_planning_interface REQUIRED)
+#find_package(rosidl_default_runtime REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
 
 # Include cpp "include" directory
 include_directories(include)
 ament_export_include_directories(include)
+
+# Install include, launch, config directories
+install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY resource DESTINATION share/${PROJECT_NAME})
+
 
 ament_python_install_package(${PROJECT_NAME})
 

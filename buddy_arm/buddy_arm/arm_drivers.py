@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+import sys
 # ROS libraries
-import rclpy
-from sensor_msgs.msg import Joy
-from control_msgs.msg import JointLog
+#import rclpy
+#from sensor_msgs.msg import Joy
+#from control_msgs.msg import *
+from control_msgs.msg import JointJog
+import control_msgs.msg as control_msg
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped
-
 
 controllerTypes = {
     1: "keyboard",
@@ -25,9 +27,9 @@ class Keyboard:
            param: parent_node - (Node) ros2 node inherited from robot_controller.py
         """
         self.parent_node = parent_node
-        self.controller = {"type": "keyboard", "twist_msg": TwistStamped(), "joint_msg": JointLog(), "sub_topic": "/cmd_vel" } 
+        self.controller = {"type": "keyboard", "twist_msg": TwistStamped, "joint_msg": JointJog, "sub_topic": "/cmd_vel" } 
         if self.parent_node is not None:
-            self.controller['subscriber'] = self.create_subscription(Twist, self.controller['sub_topic'], self.keyboardCB, 1)
+            self.controller['subscriber'] = self.parent_node.create_subscription(Twist, self.controller['sub_topic'], self.keyboardCB, 1)
            
     def keyboardCB(self, msg):
 
