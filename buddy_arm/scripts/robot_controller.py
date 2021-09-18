@@ -47,8 +47,8 @@ class ControllerToRobot(Node):
       
     def init_pub_sub(self):
         # Set up all publishers and subscribers with configured topics.
-        self.twist_pub = self.create_publisher(TwistStamped, "/delta_twist_cmds", 10)
-        self.joint_pub = self.create_publisher(TwistStamped, "/delta_joint_cmds", 10)
+        self.twist_pub = self.create_publisher(TwistStamped, "/servo_server/delta_twist_cmds", 10)
+        self.joint_pub = self.create_publisher(TwistStamped, "/servo_server/delta_joint_cmds", 10)
         self.collision_pub = self.create_publisher(PlanningScene, "/planning_scene", 10)
 
             
