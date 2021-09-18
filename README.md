@@ -1,5 +1,5 @@
-# Desktop-Arm
-Installation and Quick Start instructions for the Deesktop Robot Buddy Arm project. Contains folders for scripts, libraries, examples, and readme files
+# Raspberry Pi ROS2 Desktop Robot Arm System
+Installation and Quick Start instructions for the Desktop Robot Arm project running ROS2 Foxy off a Raspberry Pi 4. Contains folders for scripts, libraries, examples, and readme files
 
 
 ---
