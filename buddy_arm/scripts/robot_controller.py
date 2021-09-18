@@ -5,10 +5,8 @@
 import rclpy
 from rclpy.node import Node
 from std_srvs.srv import Trigger
-from sensor_msgs.msg import Joy
 from geometry_msgs.msg import TwistStamped
 from moveit_msgs.msg import PlanningScene
-from sensor_msgs.msg import Joy
 
 # robot drivers
 from buddy_arm.arm_drivers import *
@@ -27,13 +25,11 @@ class ControllerToRobot(Node):
         # declare ROS2 params
         self.init_ros_params()
 
-        # Create controller object
-        self.controller = Keyboard(self)
-        
         # create publishers and subscribers
         self.init_pub_sub()
         
         # Create controller object
+        self.controller = Keyboard(self) # default for now
         #self.controller = Controller()
         #self.controller.add_controller()
         
