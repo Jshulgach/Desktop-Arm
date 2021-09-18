@@ -69,13 +69,19 @@ cd ~/ws_moveit2/src
 git clone https://github.com/Jshulgach/Desktop-Arm.git
 cd ~/ws_moveit2
 colcon build --symlink-install
+source ./install/setup.bash
 ```
 ---
 ## Demo:
 <a name="demo"/>
 
-Run demo file in the terminal to show off robot movement features(TO-DO: make the demo file!):
+Run the teleop demo file by opening a terminal:
 ```
-ros2 launch buddy_arm demo.launch.py
+ros2 launch buddy_arm demo_teleop.launch.py
 ```
+Since only the keyboard control is operational right now, open a second terminal and type the following:
+```
+ros2 run moveit2_tutorials servo_keyboard_input
+```
+
 
