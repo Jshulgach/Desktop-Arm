@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 
-import sys
 # ROS libraries
-#import rclpy
-#from sensor_msgs.msg import Joy
-#from control_msgs.msg import *
+import rclpy
+from sensor_msgs.msg import Joy
 from control_msgs.msg import JointJog
-import control_msgs.msg as control_msg
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import TwistStamped
 
