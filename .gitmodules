@@ -1,0 +1,3 @@
+[submodule "BCN3D-Moveo"]
+	path = BCN3D-Moveo
+	url = https://github.com/BCN3D/BCN3D-Moveo.git
