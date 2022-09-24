@@ -3,8 +3,16 @@ Installation and Quick Start instructions for the Desktop Robot Arm project runn
 
 
 ---
+[Hardware](#hardware)
 [Installation](#installation)  
 [Demo](#demo)    
+---
+
+## Hardware:
+<a name="hardware"/>
+
+#### A refrence for the RAMPS 1.4 shield can be found on their [website](https://reprap.com/wiki/RAMPS_1.4)
+
 ---
 
 ## Installation:
