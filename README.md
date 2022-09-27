@@ -1,6 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 # Desktop-Robotic-Arm
-[![ ](tbd)
+![](https://github.com/Jshulgach/Desktop-Arm/blob/ros2/media/solidworks-full-arm.PNG)
 
 The Desktop Robot Arm (better name TBD) is the complete package of a ROS2-based robot controller and the [Moveo](https://www.bcn3d.com/bcn3d-moveo-the-future-of-learning-robotic-arm/), a small-medium-sized fully 3D printable Open source 6 axis robotic arm. 
 
