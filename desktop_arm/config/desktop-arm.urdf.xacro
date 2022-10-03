@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="desktop-arm">
+    <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
+
+    <!-- Import desktop arm urdf file -->
+    <xacro:include filename="$(find desktop_arm_description)/urdf/desktop_arm.urdf" />
+
+    <!-- Import desktop arm ros2_control description -->
+    <xacro:include filename="desktop-arm.ros2_control.xacro" />
+
+    <xacro:desktop-arm_ros2_control name="ArmFakeSystem" initial_positions_file="$(arg initial_positions_file)"/>
+
+</robot>

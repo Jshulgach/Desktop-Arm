@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
+"""
+Copyright 2022 Jonathan Shulgach
 
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+Contact: Jonathan Shulgach (jonathan@shulgach.com)
+
+Messy collection of controller types, probably will remove most of this 
+
+"""
 # ROS libraries
 import rclpy
 from sensor_msgs.msg import Joy
@@ -17,7 +28,8 @@ controllerTopics = {
     "xbox":"/joy",
     "spacemouse":"/spacenav/joy"
     }
-    
+   
+"""    
 class Keyboard:
     def __init__(self, parent_node = None):
         """Keyboard object with controller settings
@@ -60,23 +72,22 @@ class Keyboard:
 
 
     def updateCmdFrame(frame_to_publish, msg):
-        """checks whether any buttons are being pressed that should move specific 
-        joints instead of the end effector.
+        #checks whether any buttons are being pressed that should move specific 
+        #joints instead of the end effector.
         
-        param: frame_to_publish - (string) moveit frame to publish to
-        param: msg - (Twist) specific ros message type for keyboard
+        #param: frame_to_publish - (string) moveit frame to publish to
+        #param: msg - (Twist) specific ros message type for keyboard
         
-        """
+        
         # TO-DO: 
         pass
-
 """
+
+
 class Controller:
     def __init__(self, parent=None):
         #The controller class that has all the methods and properties 
         #a new controller should have!
-        
-        
         
         self.controller = {"type": None, 
                            "pub_topic": None, 

@@ -2,8 +2,7 @@
 <!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
-<robot
-  name="desktop_arm_description">
+<robot name="desktop-arm" xmlns:xacro="http://ros.org/wiki/xacro">
   <link
     name="base_link">
     <inertial>
@@ -85,7 +84,7 @@
     </collision>
   </link>
   <joint
-    name="joint_0"
+    name="joint_1"
     type="revolute">
     <origin
       xyz="0.0320497775774861 -0.156148136610897 0.0881843828733705"
@@ -143,7 +142,7 @@
     </collision>
   </link>
   <joint
-    name="joint_1"
+    name="joint_2"
     type="revolute">
     <origin
       xyz="0 0.1655 0"
@@ -201,7 +200,7 @@
     </collision>
   </link>
   <joint
-    name="joint_2"
+    name="joint_3"
     type="revolute">
     <origin
       xyz="0.0533123755144546 0.163058763880744 -0.139518320956508"
@@ -259,7 +258,7 @@
     </collision>
   </link>
   <joint
-    name="joint_3"
+    name="joint_4"
     type="revolute">
     <origin
       xyz="0.039132 0.040964 -0.10092"
@@ -317,7 +316,7 @@
     </collision>
   </link>
   <joint
-    name="joint_4"
+    name="joint_5"
     type="revolute">
     <origin
       xyz="0.035644 0.037793 -0.09328"
@@ -375,8 +374,8 @@
     </collision>
   </link>
   <joint
-    name="joint_5"
-    type="fixed">
+    name="joint_6"
+    type="revolute">
     <origin
       xyz="0.17605 0.29813 -0.29218"
       rpy="1.1615 0.33095 -2.9233" />
@@ -386,5 +385,17 @@
       link="end_effector" />
     <axis
       xyz="0 0 0" />
+  </joint>
+  <link name="tool0"/>
+  <joint name="joint6-tool0" type="fixed">
+    <parent link="end_effector"/>
+    <child link="tool0"/>
+    <origin rpy="0 0.5 0" xyz="0 0 0"/>
+  </joint>
+  <link name="base"/>
+  <joint name="base_link-base" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="base"/>
   </joint>
 </robot>
