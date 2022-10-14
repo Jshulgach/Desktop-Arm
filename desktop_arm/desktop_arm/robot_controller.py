@@ -20,46 +20,38 @@ from std_msgs.msg import String
 from geometry_msgs.msg import TwistStamped
 from control_msgs.msg import JointJog
 from moveit_msgs.msg import PlanningScene
-from sensor_msgs.msg import Joy, JointState
 
 # robot drivers
-#from desktop_arm.arm_drivers import *
-
-
-STICK_TRANS_X = 0 # 0
-STICK_TRANS_Y = 1 # 1
-STICK_TRANS_Z = 2 # originally positive
-STICK_ANGULAR_X = 3
-STICK_ANGULAR_Y = 4
-STICK_ANGULAR_Z = 5
-
+from desktop_arm.arm_drivers import *
 
 
 class ControllerToRobot(Node):
-    def __init__(self):
+    def __init__(self, node_name='desktop_arm_controller_node', rate=10, verbose=False):
         """This is the object that handles controller inputs and directs them to topics understood
         by the Servo Server for twist and joint changes. 
         
-        param: Node - argument passed through 
+        param: Node - just the argument passed through 
         
         """    
-        super().__init__('robot_controller_node')
+        super().__init__(node_name)
+        self.rate = rate
+        self.verbose = verbose
         
         # Potential update, want to get current joint state
-        self.current_joint_state_ = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.desired_joint_state_ = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.current_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.previous_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.desired_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
                 
-        # declare ROS2 params
+        # declare ROS2 params, create publishers, subscribers, and timer
         self.init_ros_params()
-
-        # create publishers and subscribers
         self.init_pub_sub()
-        
+        self.create_timer(1/self.rate, self.timer_callback) # frequency rate of running commands
+          
         # Create controller object
-        #self.controller = Keyboard(self) # default for now
-        #self.controller = Controller()
-        #self.controller.add_controller()
-        
+        # self.controller_type # assume XBOX controller
+        robot_state_type = "joint_state" # Will change to parameter passed
+        self.controller = XboxController(self, robotStateTypes[robot_state_type])
+
         # Start servo service client
         self.create_servo_client()
         self.logger("Servo server node created!")
@@ -67,10 +59,9 @@ class ControllerToRobot(Node):
         
     def init_ros_params(self):
         # Declare all ros2 params
-        #self.declare_parameter("controller_type", "none")
         self.declare_parameter("eef_frame_ID","tool0")
         self.declare_parameter("base_frame_ID","base_link")      
-        self.declare_parameter("controller_type","xbox")      
+        self.declare_parameter("controller_type","xbox")  
          
         self.eef_frame_ID = self.get_parameter("eef_frame_ID").value
         self.base_frame_ID = self.get_parameter("base_frame_ID").value
@@ -81,12 +72,10 @@ class ControllerToRobot(Node):
     def init_pub_sub(self):
         # Set up all publishers and subscribers with configured topics.
         self.twist_pub = self.create_publisher(TwistStamped, "/servo_server/delta_twist_cmds", 10)
-        self.joint_pub = self.create_publisher(JointJog, "/servo_server/delta_joint_cmds", 10)
+        #self.joint_pub = self.create_publisher(JointJog, "/servo_server/delta_joint_cmds", 10)
+        self.joint_pub = self.create_publisher(JointState, "/joint_states", 10)
         self.collision_pub = self.create_publisher(PlanningScene, "/planning_scene", 10)
         self.chatter_pub = self.create_publisher(String, "chatter", 10)
-        
-        
-        self.joy_sub = self.create_subscription(Joy, "/spacenav/joy", self.joy_CB, 10)
         
         
     def create_servo_client(self):
@@ -96,38 +85,18 @@ class ControllerToRobot(Node):
            self.get_logger().info('service not available, waiting again...')
         self.servo_start_client.call_async(Trigger.Request())
 
+
     def logger(self, msg):
         # Send message to terminal
         self.get_logger().info(str(msg))
         
         
-    def joy_CB(self, msg):
-        # Create the messages we might publish
-        twist_msg = TwistStamped()
-        joint_msg = JointJog()
-
-    
-        # Convert the joystick message to Twist or JointJog and publish
-        use_twist, twist_msg, joint_msg = self.convertSpacenavToCmd(msg, twist_msg, joint_msg)
-        if use_twist:
-            # publish the TwistStamped
-            twist_msg.header.frame_id = self.frame_to_publish
-            twist_msg.header.stamp = self.get_clock().now().to_msg()
-            self.twist_pub.publish(twist_msg)
-
-
-    def convertSpacenavToCmd(self, msg, twist_msg, joint_msg):
-        # The bread and butter: map buttons to twist commands
-        twist_msg.twist.linear.x = msg.axes[STICK_TRANS_X]
-        twist_msg.twist.linear.y = msg.axes[STICK_TRANS_Y]
-        twist_msg.twist.linear.z = msg.axes[STICK_TRANS_Z]
-
-        twist_msg.twist.angular.x = msg.axes[STICK_ANGULAR_X]
-        twist_msg.twist.angular.y = msg.axes[STICK_ANGULAR_Y]
-        twist_msg.twist.angular.z = msg.axes[STICK_ANGULAR_Z]
-
-        return True, twist_msg, joint_msg
-
+    def timer_callback(self):
+        if self.verbose:
+            self.get_logger().info("Updating system")
+        
+        # The controller object should handle publishing to the right topic for robot movement
+        self.current_joint_state, self.desired_joint_state = self.controller.update()
 
     
 def main(args=None):

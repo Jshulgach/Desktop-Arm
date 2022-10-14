@@ -7,7 +7,7 @@
     name="base_link">
     <inertial>
       <origin
-        xyz="0.032063 -0.15615 0.060422"
+        xyz="0 0 0"
         rpy="0 0 0" />
       <mass
         value="0.64235" />
@@ -375,7 +375,7 @@
   </link>
   <joint
     name="joint_6"
-    type="revolute">
+    type="fixed">
     <origin
       xyz="0.17605 0.29813 -0.29218"
       rpy="1.1615 0.33095 -2.9233" />
@@ -386,16 +386,5 @@
     <axis
       xyz="0 0 0" />
   </joint>
-  <link name="tool0"/>
-  <joint name="joint6-tool0" type="fixed">
-    <parent link="end_effector"/>
-    <child link="tool0"/>
-    <origin rpy="0 0.5 0" xyz="0 0 0"/>
-  </joint>
-  <link name="base"/>
-  <joint name="base_link-base" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 0"/>
-    <parent link="base_link"/>
-    <child link="base"/>
-  </joint>
 </robot>
+

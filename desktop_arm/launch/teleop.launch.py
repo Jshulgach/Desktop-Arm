@@ -94,19 +94,7 @@ def generate_launch_description():
                 output="screen",
             )
         ]
-
-    # ABB driver node to handle publishing to robot controller
-    #abb_node = Node(package='realbotics',
-    #    executable='abb_driver_node',
-    #    parameters=[ {"ip":"192.168.125.1"}, {"port":5000}, {"joint_state_topic":"/joint_states"}, {"publish_rate":2}]
-    #)
-                    
-    spacenav_node = Node(package='spacenav',
-        name="spacenav_node", 
-        executable='spacenav_node' , 
-        output='screen',
-    )
- 
+        
     static_tf = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -150,24 +138,37 @@ def generate_launch_description():
             output='screen',
     )
     
+    spacenav_node = Node(package='spacenav',
+        name="spacenav_node", 
+        executable='spacenav_node' , 
+        output='screen',
+    )
+    
+    joy_node = Node(package='joy',
+        name='joy_node',
+        executable='joy_node',
+        output='screen',
+    )
+    
     launch_nodes = [rviz_node,
-                    ros2_control_node,
-                    spacenav_node,
+                    #ros2_control_node,
+                    joy_node,
+                    #spacenav_node,
                     static_tf,
                     robot_state_publisher,
-                    container,
-                    desktop_arm_node,
+                    #container,
+                    #desktop_arm_node,
                     ]
     
     drift_rot_override = TimerAction(
         period=1.0,
         actions=[
             ExecuteProcess(
-                cmd=["ros2 service call '/servo_server/change_drift_dimensions' 'moveit_msgs/srv/ChangeDriftDimensions' '{drift_x_translation: False, drift_y_translation: False, drift_z_translation: False, drift_x_rotation: False, drift_y_rotation: False, drift_z_rotation: True}'"],
+                cmd=["ros2 service call '/servo_server/change_drift_dimensions' 'moveit_msgs/srv/ChangeDriftDimensions' '{drift_x_translation: False, drift_y_translation: False, drift_z_translation: False, drift_x_rotation: False, drift_y_rotation: True, drift_z_rotation: False}'"],
                 shell=True,
                 output="screen",
             )
         ]
     )
-    launch_nodes.append(drift_rot_override)
+    #launch_nodes.append(drift_rot_override)
     return LaunchDescription(declared_arguments + launch_nodes + load_controllers)
