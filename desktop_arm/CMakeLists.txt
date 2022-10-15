@@ -72,7 +72,8 @@ ament_python_install_package(${PROJECT_NAME})
 # Install python executables
 install(PROGRAMS
     desktop_arm/robot_controller.py
-    DESTINATION lib/${PROJECT_NAME}
+    desktop_arm/arduino_driver.py
+    DESTINATION lib/${PROJECT_NAME}    
 )
 
 if(BUILD_TESTING)

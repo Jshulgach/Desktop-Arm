@@ -110,17 +110,7 @@ def generate_launch_description():
         output="screen",
         parameters=[robot_description],
     )
-    
-    desktop_arm_node = Node(
-        package='desktop_arm',
-        executable='robot_controller.py',
-        name='controller_to_servo_node',
-        parameters=[{'base_frame_ID':'base_link',
-                     'eef_frame_ID':'end_effector',
-                     'controller_type':'spacemouse',
-        }],
-    )
-                    
+                        
     # Launch as much as possible in components
     container = ComposableNodeContainer(
             name='moveit_servo_container',
@@ -150,15 +140,44 @@ def generate_launch_description():
         output='screen',
     )
     
+    joints_yaml = os.path.join(
+        get_package_share_directory("desktop_arm_description"),
+        "config", 
+        "joint_limits.yaml"
+    )
+    desktop_arm_node = Node(
+        package='desktop_arm',
+        executable='robot_controller.py',
+        name='desktop_arm_controller_node',
+        parameters=[
+                    joints_yaml,
+                    {'base_frame_ID':'base_link',
+                     'eef_frame_ID':'end_effector',
+                     #'controller_type':'xbox',
+                     'controller_type':'keyboard',
+        }],
+    )
+    
+    arduino_node = Node(
+        package='desktop_arm',
+        executable='arduino_driver.py',
+        name='arduino_node',
+    )
+    
     launch_nodes = [rviz_node,
                     #ros2_control_node,
-                    joy_node,
+                    #joy_node,
                     #spacenav_node,
-                    static_tf,
+                    #static_tf,
                     robot_state_publisher,
                     #container,
-                    #desktop_arm_node,
-                    ]
+                    desktop_arm_node,
+                    arduino_node,
+                    ] + load_controllers
+
+                    
+    #if fake_hardware is not True:
+    #    launch_nodes.append([ros2_control_node, container])
     
     drift_rot_override = TimerAction(
         period=1.0,
@@ -171,4 +190,4 @@ def generate_launch_description():
         ]
     )
     #launch_nodes.append(drift_rot_override)
-    return LaunchDescription(declared_arguments + launch_nodes + load_controllers)
+    return LaunchDescription(declared_arguments + launch_nodes)
