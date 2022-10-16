@@ -1,0 +1,9 @@
+repositories:
+  ros-drivers/joystick_drivers:
+    type: git
+    url: https://github.com/ros-drivers/joystick_drivers.git
+    version: foxy-devel
+  ros-controls/ros2_control_demos:
+    type: git
+    url: https://github.com/ros-controls/ros2_control_demos.git
+    version: foxy

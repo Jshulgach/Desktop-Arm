@@ -36,6 +36,7 @@ find_package(pluginlib REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_eigen REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
+find_package(robot_state_publisher REQUIRED)
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   ament_cmake
@@ -55,6 +56,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   Boost
   control_msgs
   moveit_servo
+  robot_state_publisher
 )
 
 include_directories(include)
