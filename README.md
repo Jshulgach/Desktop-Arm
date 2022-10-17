@@ -57,7 +57,7 @@ These instructions were tested on Ubuntu server running on a Raspberry Pi 4. If 
      ~~~
      mkdir -p ~/ros2_ws/src
      cd ~ros2_ws/src
-     git clone --branch ros2 https://github.com/Jshulgach/Desktop-Arm.git
+     git clone https://github.com/Jshulgach/Desktop-Arm.git
      ~~~
    + Run the `install.sh` bash script
      ~~~
