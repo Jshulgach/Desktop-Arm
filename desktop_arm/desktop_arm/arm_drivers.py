@@ -47,6 +47,7 @@ XBOX_BASE_RIGHT = 5
 
 def convertSpacenavToCmd(self, msg, twist_msg, joint_msg):
         # The bread and butter: map buttons to twist commands
+        
         twist_msg.twist.linear.x = msg.axes[STICK_TRANS_X]
         twist_msg.twist.linear.y = msg.axes[STICK_TRANS_Y]
         twist_msg.twist.linear.z = msg.axes[STICK_TRANS_Z]
@@ -59,40 +60,36 @@ def convertSpacenavToCmd(self, msg, twist_msg, joint_msg):
 
 
 class KeyboardController:
-    def __init__(self, parent=None, operation_type=None, controller_info=None):
+    def __init__(self, parent=None, operation_type="joint_state", controller_info=None):
         #The keyboard controller class that has all the methods and properties 
         #a keyboard controller should have!
         
-        #if controller_info is not None:
-            #self.info = {"pub_type": controller_info.pub_type, 
-            #             "pub_topic": controller_info.pub_topic, 
-            #             "sub_type": controller_info.sub_type, 
-            #             "sub_topic": controller_info.sub_topic
-            #}
-            
-        self.info = {"pub_type": JointState, "pub_topic": "/joint_states", "sub_type": Twist, "sub_topic": "/cmd_vel"}
+        self.info = {"pub_type": JointState, "pub_topic": "/joint_states", "sub_type": Joy, "sub_topic": "/joy"}
         self.parent = parent # In case parameters need to be shared between the main driver and the user controller
         self.use_twist = False
         self.twist_msg = None
         self.joint_msg = None
-
+        
         if operation_type==robotStateTypes["twist"]:
             # Twist or cartesian commands not supported yet
+            self.twist_msg = TwistStamped()
             if (self.parent is not None):
                 self.parent.logger("Twist commands not suppoted yet for this controller")
         
         elif operation_type==robotStateTypes["joint_jog"]:
-            # Joint Jogging not supported yet
+            # TJoint Jogging not supported yet
+            self.joint_msg = JointJog()
             if (self.parent is not None):
                 self.parent.logger("Joint Jogging not supported yet for this controller")
         
         elif operation_type==robotStateTypes["joint_state"]:
             # Publish directly to "/joint_state" topic
-            self.parent.logger("Creating JointState type for controller")
+            self.joint_msg = JointState()
+            self.parent.logger("Creating JointState type for Keyboard controller")
             
             if (self.parent is not None):
-                self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 10 )
-                self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 10 )
+                self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 10)
+                self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 10)
                 
         else:
             if self.parent:
@@ -161,6 +158,7 @@ class KeyboardController:
         #    # Don't publish old data, just skip
         #    return
         
+        
         if self.use_twist:
             # publish the TwistStamped
             if self.twist_msg is not None:
@@ -211,11 +209,11 @@ class XboxController:
         elif operation_type==robotStateTypes["joint_state"]:
             # Publish directly to "/joint_state" topic
             self.joint_msg = JointState()
-            self.parent.logger("Creating JointState type for controller")
-            
+            self.parent.logger("Creating JointState type for Xbox controller")
+            self.info = {"pub_type": JointState, "pub_topic": "/joint_states", "sub_type": Joy, "sub_topic": "/joy"}            
             if (self.parent is not None):
-                self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 10)
-                self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 10)
+                self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 1)
+                self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 1)
                 
         else:
             if self.parent:
@@ -228,7 +226,7 @@ class XboxController:
         
         
     def convertXboxToCmd(self, msg, twist_msg, joint_msg, operation_type=robotStateTypes["joint_state"]):
-        # The bread and butter: map buttons to twist commands
+        # The bread and butter: map buttons to twist or joint commands
         use_twist = False
         if operation_type==robotStateTypes["twist"]:
             use_twist = True
@@ -248,19 +246,20 @@ class XboxController:
         elif operation_type==robotStateTypes["joint_state"]:
             # Making this a JointState message type. It takes the controller inputs and converts them to new joint positions based on the previous positions 
             names = ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5"]
-            joint_msg.name.append(names)           
-            
+            #joint_msg.name.append(names)           
+            joint_msg.name = names
             # move up to 1 degree every step 
             
             joint_1 = self.parent.joint_step*msg.axes[0] # I think this is left joystick
             #if joint_1 > self.parent.joint_1_step_limit:
             #    joint_1 = self.parent.joint_1_step_limit
-            vals = [0,0,0,0,0]
-            joint_msg.position.append(0.0)
-            joint_msg.position.append(0.0)
-            joint_msg.position.append(0.0)
-            joint_msg.position.append(0.0)
-            joint_msg.position.append(0.0)
+            vals = [joint_1,0.,0.,0.,0.]
+            joint_msg.position = vals
+            #joint_msg.position.append(0.0)
+            #joint_msg.position.append(0.0)
+            #joint_msg.position.append(0.0)
+            #joint_msg.position.append(0.0)
+            #joint_msg.position.append(0.0)
 
             
         return use_twist, twist_msg, joint_msg
@@ -280,7 +279,12 @@ class XboxController:
             # publish the JointState message
             self.joint_msg.header.frame_id = self.parent.frame_to_publish
             self.joint_msg.header.stamp = self.parent.get_clock().now().to_msg()
-            #self.parent.joint_pub.publish(self.joint_msg)
+            try:
+                self.parent.joint_pub.publish(self.joint_msg)
+            except:
+                #    print(type(self.joint_msg))
+                self.parent.logger(str(self.joint_msg))
+            
 
         return [0,0,0,0,0,0], [0,0,0,0,0,0]
             

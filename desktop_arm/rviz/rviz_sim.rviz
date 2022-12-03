@@ -103,7 +103,7 @@ Visualization Manager:
         Show Robot Visual: true
       Value: true
     - Class: rviz_default_plugins/TF
-      Enabled: false
+      Enabled: true
       Frame Timeout: 15
       Frames:
         All Enabled: true

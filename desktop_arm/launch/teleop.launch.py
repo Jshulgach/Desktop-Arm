@@ -150,11 +150,12 @@ def generate_launch_description():
         executable='robot_controller.py',
         name='desktop_arm_controller_node',
         parameters=[
-                    joints_yaml,
                     {'base_frame_ID':'base_link',
-                     'eef_frame_ID':'end_effector',
-                     #'controller_type':'xbox',
-                     'controller_type':'keyboard',
+                    'eef_frame_ID':'end_effector',
+                    'controller_type':'xbox',
+                    'publishing_rate':4.0,
+                     #'controller_type':'keyboard',
+                     #joints_yaml
         }],
     )
     
@@ -166,13 +167,13 @@ def generate_launch_description():
     
     launch_nodes = [rviz_node,
                     #ros2_control_node,
-                    #joy_node,
+                    joy_node,
                     #spacenav_node,
                     #static_tf,
                     robot_state_publisher,
                     #container,
                     desktop_arm_node,
-                    arduino_node,
+                    #arduino_node,
                     ] + load_controllers
 
                     

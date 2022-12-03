@@ -46,16 +46,17 @@ class ControllerToRobot(Node):
         self.previous_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.desired_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.robot_state_type = robotStateTypes["joint_state"]
+        self.parameters = {}
                 
         # declare ROS2 params, create publishers, subscribers, and timer
         self.init_ros_params()
         self.init_pub_sub()
-        self.create_timer(1/self.rate, self.timer_callback) # frequency rate of running commands
+        self.create_timer(1/self.parameters["publishing_rate"], self.timer_callback) # frequency rate of running commands
           
         # Create controller object
         # self.controller_type # assume XBOX controller
-        #self.controller = XboxController(self, robotStateTypes[robot_state_type])
-        self.user_controller = KeyboardController(self, self.robot_state_type)
+        self.user_controller = XboxController(self, self.robot_state_type)
+        #self.user_controller = KeyboardController(self, self.robot_state_type)
 
 
         
@@ -66,12 +67,13 @@ class ControllerToRobot(Node):
         
     def init_ros_params(self):
         # Declare all ros2 params
-        self.declare_parameter("base_frame_ID","base_link")      
-        self.declare_parameter("eef_frame_ID","tool0")
-        self.declare_parameter("controller_type","xbox")  
-        self.declare_parameter("joint_step", 1.0) # in degrees
-        self.declare_parameter("publishing_rate", 1.0) # safe, once every second
-        self.declare_parameter("controller_joint_names", None)
+        self.add_parameter("base_frame_ID","base_link")
+        #self.declare_parameter("base_frame_ID","base_link")      
+        self.add_parameter("eef_frame_ID","tool0")
+        self.add_parameter("controller_type","xbox")  
+        self.add_parameter("joint_step", 1.0) # in degrees
+        self.add_parameter("publishing_rate", 1.0) # safe, once every second
+        self.add_parameter("controller_joint_names", None)
         
         self.robot_state_type = robotStateTypes["joint_state"] # Will change to parameter passed
 
@@ -84,13 +86,22 @@ class ControllerToRobot(Node):
         #    self.logger('Warning: Joint names not found or sisue with loading. Joint state publishing disabled')
         
          
-        self.eef_frame_ID = self.get_parameter("eef_frame_ID").value
-        self.base_frame_ID = self.get_parameter("base_frame_ID").value
-        self.controller_type = self.get_parameter("controller_type").value
-        self.joint_step = self.get_parameter("joint_step").value
+        self.eef_frame_ID = self.parameters["eef_frame_ID"]
+        self.base_frame_ID = self.parameters["base_frame_ID"]
+        self.controller_type = self.parameters["controller_type"]
+        self.joint_step = self.parameters["joint_step"]
+        self.eef_frame_ID = self.parameters["eef_frame_ID"]
+        #self.base_frame_ID = self.get_parameter("base_frame_ID").value
+        #self.controller_type = self.get_parameter("controller_type").value
+        #self.joint_step = self.get_parameter("joint_step").value
         self.frame_to_publish = self.base_frame_ID
       
       
+    def add_parameter(self, param, val):
+        self.declare_parameter(param, val)
+        self.parameters[param] = self.get_parameter(param).value
+        self.logger("Added parameter - {}: {}".format(param, self.parameters[param]))
+    
     def init_pub_sub(self):
         # Set up all publishers and subscribers with configured topics.
         self.twist_pub = self.create_publisher(TwistStamped, "/servo_server/delta_twist_cmds", 10)
