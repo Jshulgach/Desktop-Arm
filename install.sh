@@ -47,7 +47,8 @@ sudo apt-get install -y \
     python3-pip \ 
     python3-colcon-common-extensions \
     python3-argcomplete \
-    python3-rosdep \
+    python3-rosdep
+     \
     python3-setuptools \
 
 sudo rosdep init
