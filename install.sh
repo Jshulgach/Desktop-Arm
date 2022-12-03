@@ -38,7 +38,20 @@ fi
 source /opt/ros/foxy/setup.bash
 echo "source /opt/ros/foxy/setup.bash" >> ~/.bashrc
 
+<<<<<<< HEAD
 sudo apt-get install -y cmake build-essential python3-pip python3-colcon-common-extensions python3-argcomplete python3-rosdep python3-setuptools
+=======
+sudo apt-get install -y \
+    cmake \
+    build-essential \ 
+    python3-pip \ 
+    python3-colcon-common-extensions \
+    python3-argcomplete \
+    python3-rosdep
+     \
+    python3-setuptools \
+
+>>>>>>> ros2
 sudo rosdep init
 rosdep update
 
