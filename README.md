@@ -56,7 +56,7 @@ These instructions were tested on Ubuntu server running on a Raspberry Pi 4. If 
    + Clone the Desktop Arm Github repo
      ~~~
      mkdir -p ~/ros2_ws/src
-     cd ~r/os2_ws/src
+     cd ~/ros2_ws/src
      git clone https://github.com/Jshulgach/Desktop-Arm.git
      ~~~
    + Run the `install.sh` bash script
