@@ -9,13 +9,13 @@ It is functionally and aesthetically similar to other amazing robot arms like th
 The main "selling points" of this arm that separate it from other existing DIY arms are:
 + Raspberry Pi 4 Model B - main processing unit for motion planning and listener routines
 + Arduino Mega microcontroller to interface with the robot systems
-+ ROS2 Foxy (with Moveit2 for motion planning)
++ Runs on ROS2 (with Moveit2 for motion planning)
 + All 3D printable components (aside from nuts & bolts)
 + Less that $1,000 with the B.O.M
 + Capacity to integrate more features
 
 # Where to start ? 
-This Github repository contains Installation and Quick Start instructions for the Desktop Robot Arm project running ROS2 Foxy off a Raspberry Pi 4, and contains folders for scripts, libraries, examples, and readme files. If you want to make the arm yourself, start with Hardware.
+This Github repository contains Installation and Quick Start instructions for the Desktop Robot Arm project running ROS2 Humble off a Raspberry Pi 4, and contains folders for scripts, libraries, examples, and readme files. If you want to make the arm yourself, start with Hardware.
 
 Table of Contents
 ---
@@ -46,23 +46,28 @@ Table of Contents
 
 ## Raspberry Pi 4 Software Installation:
 <a name="rpi4-installation"/>
-These instructions were tested on Ubuntu server running on a Raspberry Pi 4. If starting with a brand new Raspi and a blank microSD card, start with step 1 if you need to set up hardware.
+These instructions were tested on Ubuntu 22.04.1 LTS running on a Raspberry Pi 4 64-bit 4Gb. If starting with a brand new Raspi and a blank microSD card, start with step 1 if you need to set up hardware.
 
+1. Download the following software packages for flashing and writing to a new microSD card
+   + [SD Memory Card Formatter](https://www.sdcard.org/downloads/formatter/)
+   + [Raspberry Pi Imager](https://www.raspberrypi.com/software/)
 
-1. Setting up Raspberry Pi 4
-   + Install Ubuntu server image on Raspi 4 following these [general instructions](https://itsfoss.com/install-ubuntu-server-raspberry-pi/)
+2. Setting up Raspberry Pi 4
+   + Follow the Imager instructions on writing the Ubuntu server image on Raspi 4. Please select Ubuntu 22.04 LTS. DO NOT install Ubuntu 22.10 LTS as the ROS2 humble debian packages aren't supported yet.
  
-2. Install the desktop arm software using the `install.sh` bash script, which includes installation steps for [ROS2 Foxy](https://docs.ros.org/en/foxy/Installation/Ubuntu-Development-Setup.html), [Moveit2](https://moveit.ros.org/install-moveit2/binary/), and other dependent packages. Note that it's necessary to have the subdirectory created before cloning the Github code repository. This will allow building the ROS2 packages (and any future additions) into the proper workspace.
-   + Clone the Desktop Arm Github repo
-     ~~~
+3. Install packages
+   + Clone the Desktop Arm Github repository onto the specific `ros2_ws` folder which we create 
+   ~~~
      mkdir -p ~/ros2_ws/src
      cd ~/ros2_ws/src
      git clone https://github.com/Jshulgach/Desktop-Arm.git
      ~~~
-   + Run the `install.sh` bash script
+
+   + Run the `install.sh` bash script, which also includes installation steps for [ROS2 Humble](https://docs.ros.org/en/humble/Installation/Ubuntu-Development-Setup.html), [Moveit2](https://moveit.ros.org/install-moveit2/binary/), and other dependent packages.
      ~~~
      cd Desktop-Arm
-     sudo ./install.sh
+     chmod +x install.sh
+     ./install.sh
      ~~~
    
 ## Arduino Installation:
@@ -86,11 +91,7 @@ Flash the 'desktop-arm-dancing-demo.ino' script onto the Arduino and enable powe
 ![ ](tbd)
 Run the teleop demo file by opening a terminal:
 ```
-ros2 launch buddy_arm demo_teleop.launch.py
-```
-Since only the keyboard control is operational right now, open a second terminal and type the following:
-```
-ros2 run moveit2_tutorials servo_keyboard_input
+ros2 launch desktop_arm teleop.launch.py
 ```
 ---
 
@@ -121,7 +122,7 @@ Coming Soon!
 
 # Support the project
 
-This project is completely Open source and free to all, but any help in terms of donations or advice is really appreciated. Thank you!
+This project is completely open source and free to all, but any help in terms of donations or advice is really appreciated. Thank you!
 
 
 

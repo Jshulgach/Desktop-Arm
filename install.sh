@@ -58,6 +58,10 @@ sudo apt-get install -y ros-humble-moveit
 sudo apt-get install -y ros-humble-ros2-control ros-humble-ros2-controllers
 vcs import < Desktop-Arm/desktop_arm.repos
 
+# Install python pip installer and any additional python packages separated by space
+sudo apt install python3-pip
+pip install pyserial
+
 # Finally build workspace and any dependencies
 cd ~/ros2_ws
 rosdep install -r --from-paths . --ignore-src --rosdistro $ROS_DISTRO -y
@@ -65,4 +69,4 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
 source ~/ros2_ws/install/setup.bash
 echo "~/ros2_ws/install/setup.bash" >> ~/.bashrc
 sudo apt-get update
-sdo apt-get upgrade -y
+sudo apt-get upgrade -y

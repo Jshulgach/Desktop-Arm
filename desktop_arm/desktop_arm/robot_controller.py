@@ -28,10 +28,18 @@ from desktop_arm.arm_drivers import *
 
 class ControllerToRobot(Node):
     def __init__(self, node_name='desktop_arm_controller_node', rate=1, verbose=False):
-        """This is the object that handles controller inputs and directs them to topics understood
+        """ This is the object that handles controller inputs and directs them to topics understood
         by the Servo Server for twist and joint changes. 
         
-        param: Node - just the argument passed through 
+        Parameters
+        ----------
+        node_name: str
+            Node name argument passed through 
+        rate : int
+            update cycle rate for the 'update' command, used to handle data being sent to 
+            the microcontroller
+        verbose : bool
+            Enable/disable debugging text output on the terminal
         
         """    
         super().__init__(node_name,
@@ -45,7 +53,7 @@ class ControllerToRobot(Node):
         self.current_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.previous_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.desired_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.robot_state_type = robotStateTypes["joint_state"]
+        self.robot_state_type = robotStateTypes["joint_state"] # Will change to parameter passed
         self.parameters = {}
                 
         # declare ROS2 params, create publishers, subscribers, and timer
@@ -61,21 +69,22 @@ class ControllerToRobot(Node):
 
         
         # Start servo service client
-        #self.create_servo_client()
+        #self.create_servo_client() # TO-DO once the cartesian planning is all figured out
         self.logger("Servo server node created!")
         
         
     def init_ros_params(self):
-        # Declare all ros2 params
+        """ Declare all ros2 params
+        
+        The 'add_parameter()' method will declare parameters if they haven't been included yet
+        
+        """
         self.add_parameter("base_frame_ID","base_link")
-        #self.declare_parameter("base_frame_ID","base_link")      
         self.add_parameter("eef_frame_ID","tool0")
         self.add_parameter("controller_type","xbox")  
         self.add_parameter("joint_step", 1.0) # in degrees
         self.add_parameter("publishing_rate", 1.0) # safe, once every second
         self.add_parameter("controller_joint_names", None)
-        
-        self.robot_state_type = robotStateTypes["joint_state"] # Will change to parameter passed
 
         #self.joint_names = self.get_parameter("controller_joint_names").value
         #if self.joint_names is not None:
@@ -98,11 +107,18 @@ class ControllerToRobot(Node):
       
       
     def add_parameter(self, param, val):
+        """ Helper function to store parameters within a dict
+        """
         self.declare_parameter(param, val)
         self.parameters[param] = self.get_parameter(param).value
         self.logger("Added parameter - {}: {}".format(param, self.parameters[param]))
     
     def init_pub_sub(self):
+        """ A function that creates all the publishers and subscribers for the robot state, 
+            general event chatter, and twist commands
+        
+        
+        """ 
         # Set up all publishers and subscribers with configured topics.
         self.twist_pub = self.create_publisher(TwistStamped, "/servo_server/delta_twist_cmds", 10)
         #self.joint_pub = self.create_publisher(JointJog, "/servo_server/delta_joint_cmds", 10)
@@ -112,7 +128,10 @@ class ControllerToRobot(Node):
         
         
     def create_servo_client(self):
-        # Create a service client to start the ServoServer
+        """ Create a service client to start the ServoServer
+        
+            Depends on the controller manager and plugin from moveit
+        """
         self.servo_start_client = self.create_client(Trigger,"/servo_server/start_servo")
         while not self.servo_start_client.wait_for_service(timeout_sec=1.0):
            self.get_logger().info('service not available, waiting again...')
@@ -120,16 +139,21 @@ class ControllerToRobot(Node):
 
 
     def logger(self, msg):
-        # Send message to terminal
+        """ Send message to terminal, enforce as string"""
         self.get_logger().info(str(msg))
         
         
     def timer_callback(self):
+        """ The timer callback function that gets called depending on the cycling rate set by 
+            'publishing_rate' 
+            
+        """
         if self.verbose:
             self.get_logger().info("Updating system")
         
         # The controller object should handle publishing to the right topic for robot movement
         self.current_joint_state, self.desired_joint_state = self.user_controller.update()
+        #self.logger("current joint values".format(self.current_joint_state))
         
         
         

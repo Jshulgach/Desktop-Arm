@@ -1,3 +1,14 @@
+"""
+Copyright 2022 Jonathan Shulgach
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+Contact: Jonathan Shulgach (jonathan@shulgach.com)
+
+
+"""
 import os
 import yaml
 from launch import LaunchDescription
@@ -24,7 +35,6 @@ def load_file(package_name, file_path):
 def load_yaml(package_name, file_path):
     package_path = get_package_share_directory(package_name)
     absolute_file_path = os.path.join(package_path, file_path)
-
     try:
         with open(absolute_file_path, 'r') as file:
             return yaml.safe_load(file)
@@ -43,7 +53,7 @@ def generate_launch_description():
     launch_rviz = LaunchConfiguration("launch_rviz")
      
     # Get parameters for the Servo node
-    servo_yaml = load_yaml("desktop_arm", "config/desktop-arm_simulated_config.yaml")
+    servo_yaml = load_yaml("desktop_arm","config/desktop-arm_simulated_config.yaml")
     servo_params = {"moveit_servo": servo_yaml}
 
     # Get URDF and SRDF
@@ -78,23 +88,37 @@ def generate_launch_description():
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[robot_description, ros2_controllers_path],
-        output={
-            "stdout": "screen",
-            "stderr": "screen",
-        },
+        output="screen",
     )
 
-    # Load controllers
-    load_controllers = []
-    for controller in ["desktop_arm_controller", "joint_state_broadcaster"]:
-        load_controllers += [
-            ExecuteProcess(
-                cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
-                shell=True,
-                output="screen",
-            )
-        ]
+    joint_state_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "joint_state_broadcaster",
+            "--controller-manager-timeout",
+            "300",
+            "--controller-manager",
+            "/controller_manager",
+        ],
+    )
         
+    desktop_arm_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["desktop_arm_controller", "-c", "/controller_manager"],
+    )   
+    
+    # Load controllers
+    #load_controllers = []
+    #for controller in ["desktop_arm_controller", "joint_state_broadcaster"]:
+    #    load_controllers += [
+    #        ExecuteProcess(
+    #            cmd=["ros2 run controller_manager spawner.py {}".format(controller)],
+    #            shell=True,
+    #            output="screen",
+    #        )
+    #    ]
     static_tf = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -140,10 +164,8 @@ def generate_launch_description():
         output='screen',
     )
     
-    joints_yaml = os.path.join(
-        get_package_share_directory("desktop_arm_description"),
-        "config", 
-        "joint_limits.yaml"
+    joints_yaml = os.path.join( 
+        get_package_share_directory("desktop_arm_description"), "config", "joint_limits.yaml"
     )
     desktop_arm_node = Node(
         package='desktop_arm',
@@ -158,7 +180,7 @@ def generate_launch_description():
                      #joints_yaml
         }],
     )
-    
+
     arduino_node = Node(
         package='desktop_arm',
         executable='arduino_driver.py',
@@ -168,13 +190,15 @@ def generate_launch_description():
     launch_nodes = [rviz_node,
                     #ros2_control_node,
                     joy_node,
+                    #joint_state_broadcaster_spawner,
+                    #desktop_arm_controller_spawner,
                     #spacenav_node,
-                    #static_tf,
+                    static_tf,
                     robot_state_publisher,
                     #container,
                     desktop_arm_node,
-                    #arduino_node,
-                    ] + load_controllers
+                    arduino_node,
+                    ] #+ load_controllers
 
                     
     #if fake_hardware is not True:

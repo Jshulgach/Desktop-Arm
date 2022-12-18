@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.22)
 project(desktop_arm)
 
 # Default to C99
@@ -16,48 +16,32 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 # find dependencies
-find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED system filesystem date_time thread)
-find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_python REQUIRED)
-find_package(control_msgs REQUIRED)
-find_package(moveit_core REQUIRED)
-find_package(moveit_ros_planning REQUIRED)
-find_package(moveit_ros_planning_interface REQUIRED)
-find_package(moveit_ros_perception REQUIRED)
-find_package(moveit_servo REQUIRED)
-find_package(interactive_markers REQUIRED)
-find_package(rviz_visual_tools REQUIRED)
-find_package(moveit_visual_tools REQUIRED)
-find_package(geometric_shapes REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(tf2_ros REQUIRED)
-find_package(tf2_eigen REQUIRED)
-find_package(tf2_geometry_msgs REQUIRED)
-find_package(robot_state_publisher REQUIRED)
+find_package(moveit_common REQUIRED)
+moveit_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
-  ament_cmake
-  rclcpp
-  rclcpp_action
-  tf2_geometry_msgs
-  tf2_ros
+  control_msgs
+  control_toolbox
+  geometry_msgs
   moveit_core
-  rviz_visual_tools
-  moveit_visual_tools
-  moveit_ros_planning_interface
-  interactive_markers
-  tf2_geometry_msgs
+  moveit_msgs
   moveit_ros_planning
   pluginlib
-  Eigen3
-  Boost
-  control_msgs
-  moveit_servo
-  robot_state_publisher
+  rclcpp
+  rclcpp_components
+  sensor_msgs
+  std_msgs
+  std_srvs
+  tf2_eigen
+  trajectory_msgs
 )
+
+find_package(ament_cmake REQUIRED)
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3 REQUIRED)
+foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
 
 include_directories(include)
 ament_export_include_directories(include)
@@ -71,10 +55,11 @@ install(DIRECTORY rviz DESTINATION share/${PROJECT_NAME})
 
 
 ament_python_install_package(${PROJECT_NAME})
+
 # Install python executables
 install(PROGRAMS
-    desktop_arm/robot_controller.py
     desktop_arm/arduino_driver.py
+    desktop_arm/robot_controller.py
     DESTINATION lib/${PROJECT_NAME}    
 )
 
