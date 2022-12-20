@@ -13,7 +13,6 @@ Messy collection of controller types and enums ...
 """
 # ROS libraries
 import rclpy
-import math
 from sensor_msgs.msg import Joy, JointState
 from control_msgs.msg import JointJog
 from geometry_msgs.msg import Twist, TwistStamped
@@ -29,7 +28,6 @@ controllerTopics = {
     "spacemouse":"/spacenav/joy"
     }
    
-#TO-DO: change to enum
 robotStateTypes = {
     "joint_state":1,
     "joint_jog":2,
@@ -49,7 +47,6 @@ XBOX_BASE_RIGHT = 5
 
 def convertSpacenavToCmd(self, msg, twist_msg, joint_msg):
         # The bread and butter: map buttons to twist commands
-        
         twist_msg.twist.linear.x = msg.axes[STICK_TRANS_X]
         twist_msg.twist.linear.y = msg.axes[STICK_TRANS_Y]
         twist_msg.twist.linear.z = msg.axes[STICK_TRANS_Z]
@@ -62,45 +59,40 @@ def convertSpacenavToCmd(self, msg, twist_msg, joint_msg):
 
 
 class KeyboardController:
-    def __init__(self, parent=None, operation_type="joint_state", controller_info=None):
-        """ The keyboard controller class that has all the methods and properties 
-        a keyboard controller should have!
+    def __init__(self, parent=None, operation_type=None, controller_info=None):
+        #The keyboard controller class that has all the methods and properties 
+        #a keyboard controller should have!
         
-        Parameters
-        ----------
-        parent: class
-            The parent robot controller object. The ros2 node features like logging, publishers and subscribers are inherited
-        operation_type: str
-            A string input for specification of what kind of positional data to send to the robot, (between joint states or cartesian states). 
-        controller_info: dict
-            Place hodler for pub/sub info (TO-DO)
-        """
-        self.info = {"pub_type": JointState, "pub_topic": "/joint_states", "sub_type": Joy, "sub_topic": "/joy"}
+        #if controller_info is not None:
+            #self.info = {"pub_type": controller_info.pub_type, 
+            #             "pub_topic": controller_info.pub_topic, 
+            #             "sub_type": controller_info.sub_type, 
+            #             "sub_topic": controller_info.sub_topic
+            #}
+            
+        self.info = {"pub_type": JointState, "pub_topic": "/joint_states", "sub_type": Twist, "sub_topic": "/cmd_vel"}
         self.parent = parent # In case parameters need to be shared between the main driver and the user controller
         self.use_twist = False
         self.twist_msg = None
         self.joint_msg = None
-        
+
         if operation_type==robotStateTypes["twist"]:
             # Twist or cartesian commands not supported yet
-            self.twist_msg = TwistStamped()
             if (self.parent is not None):
                 self.parent.logger("Twist commands not suppoted yet for this controller")
         
         elif operation_type==robotStateTypes["joint_jog"]:
-            # TJoint Jogging not supported yet
-            self.joint_msg = JointJog()
+            # Joint Jogging not supported yet
             if (self.parent is not None):
                 self.parent.logger("Joint Jogging not supported yet for this controller")
         
         elif operation_type==robotStateTypes["joint_state"]:
             # Publish directly to "/joint_state" topic
-            self.joint_msg = JointState()
-            self.parent.logger("Creating JointState type for Keyboard controller")
+            self.parent.logger("Creating JointState type for controller")
             
             if (self.parent is not None):
-                self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 10)
-                self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 10)
+                self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 10 )
+                self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 10 )
                 
         else:
             if self.parent:
@@ -109,12 +101,6 @@ class KeyboardController:
 
 
     def sub_CB(self, msg):
-        """ callback function for incoming controller data subscriber 
-        
-        This function converts the keyboard message to Twist or JointJog (or JointState!) depending 
-        on the 'operation_type' parameter
-        
-        """
         # Convert the joystick message to Twist or JointJog (or JointState!) and publish
         twist_msg, joint_msg = self.create_ros_msg()
         self.use_twist, self.twist_msg, self.joint_msg = self.convertKeyboardToCmd(msg, twist_msg, joint_msg, self.parent.robot_state_type)
@@ -130,27 +116,6 @@ class KeyboardController:
                 
 
     def convertKeyboardToCmd(self, msg, twist_msg, joint_msg, operation_type=robotStateTypes["joint_state"]):
-        """ function that converts ROS2 type message into command messages
-        
-        This function converts the incoming keyboard data like analog values or mapping buttons 
-        to twist or joint commands. Joint-specific parameters are utilized as well as range limits
-        
-        Parameters
-        ----------
-        msg: (ROS2 datatype)
-            A ROS2 datatype which is of type JointState, JointJog, or Twist, depending on 
-            the 'operation_type' parameter input
-        operation_type: str
-            operation_type: str
-            A string input for specification of what kind of positional data to send to the robot, (between joint states or cartesian states). 
-            
-        Notes
-        -----
-        
-        TO-DO: change to Enum  
-        
-        
-        """
         self.parent.logger("convert command")
         # The bread and butter: map buttons to twist commands
         use_twist = False
@@ -191,14 +156,10 @@ class KeyboardController:
         return use_twist, twist_msg, joint_msg
 
     def update(self):
-        """ Function that when called publishes data to the publisher-specified topic for robot commands 
-        
-        
-        """
+    
         #if self.current_joint_state == self.previous_joint_state:
         #    # Don't publish old data, just skip
         #    return
-        
         
         if self.use_twist:
             # publish the TwistStamped
@@ -219,18 +180,8 @@ class KeyboardController:
 
 class XboxController:
     def __init__(self, parent=None, operation_type=None, controller_info=None):
-        """ The xbox controller class that has all the methods and properties 
-        a new controller should have!
-        
-        Parameters
-        ----------
-        parent: class
-            The parent robot controller object. The ros2 node features like logging, publishers and subscribers are inherited
-        operation_type: str
-            A string input for specification of what kind of positional data to send to the robot, (between joint states or cartesian states). 
-        controller_info: dict
-            Place hodler for pub/sub info (TO-DO)
-        """
+        #The xbox controller class that has all the methods and properties 
+        #a new controller should have!
         
         #if controller_info is not None:
             #self.info = {"pub_type": controller_info.pub_type, 
@@ -244,116 +195,78 @@ class XboxController:
         self.use_twist = False
         self.twist_msg = None
         self.joint_msg = None
-        self.joint_vals = [0.0, 0.0, 0.0, 0.0, 0.0] 
         
         if operation_type==robotStateTypes["twist"]:
+            # Twist or cartesian commands not supported yet
             self.twist_msg = TwistStamped()
             if (self.parent is not None):
                 self.parent.logger("Twist commands not suppoted yet for this controller")
         
         elif operation_type==robotStateTypes["joint_jog"]:
+            # TJoint Jogging not supported yet
             self.joint_msg = JointJog()
             if (self.parent is not None):
                 self.parent.logger("Joint Jogging not supported yet for this controller")
         
         elif operation_type==robotStateTypes["joint_state"]:
+            # Publish directly to "/joint_state" topic
             self.joint_msg = JointState()
-            self.parent.logger("Creating JointState type for Xbox controller")
-            self.info = {"pub_type": JointState, 
-                         "pub_topic": "/joint_states", 
-                         "sub_type": Joy, 
-                         "sub_topic": "/joy"}            
-                         
+            self.parent.logger("Creating JointState type for controller")
+            
+            if (self.parent is not None):
+                self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 10)
+                self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 10)
+                
         else:
             if self.parent:
                 self.parent.logger("Invalid operation type passed. User controller failed set up.")
                 
-        if self.parent:
-            self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 1)
-            self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 1)
-                
-
         
     def sub_CB(self, msg):
-        """ callback function for incoming controller data subscriber 
-        
-        This function converts the joystick message to Twist or JointJog (or JointState!) depending 
-        on the 'operation_type' parameter
-        
-        """
-        self.use_twist = self.convertXboxToCmd(msg, self.parent.robot_state_type)
+        # Convert the joystick message to Twist or JointJog (or JointState!) and publish
+        self.use_twist, self.twist_msg, self.joint_msg = self.convertXboxToCmd(msg, self.twist_msg, self.joint_msg, self.parent.robot_state_type)
         
         
-        
-    def convertXboxToCmd(self, msg, operation_type=robotStateTypes["joint_state"]):
-        
-        """ function that converts ROS2 type message into command messages
-        
-        This function converts the incoming data like analog values or mapping buttons 
-        to twist or joint commands. Joint-specific parameters are utilized as well as range limits
-        
-        Parameters
-        ----------
-        msg: (ROS2 datatype)
-            A ROS2 datatype which is of type JointState, JointJog, or Twist, depending on 
-            the 'operation_type' parameter input
-        operation_type: str
-            operation_type: str
-            A string input for specification of what kind of positional data to send to the robot, (between joint states or cartesian states). 
-            
-        Notes
-        -----
-        
-        TO-DO: change to Enum  
-        Previous positions are saved to the parent object to 'joint_vals'
-        
-        """
+    def convertXboxToCmd(self, msg, twist_msg, joint_msg, operation_type=robotStateTypes["joint_state"]):
+        # The bread and butter: map buttons to twist commands
         use_twist = False
-        twist_msg = None
-        joint_msg = None
-        
         if operation_type==robotStateTypes["twist"]:
             use_twist = True
-            self.twist_msg.twist.linear.x = msg.axes[STICK_TRANS_X]
-            self.twist_msg.twist.linear.y = msg.axes[STICK_TRANS_Y]
-            self.twist_msg.twist.linear.z = msg.axes[STICK_TRANS_Z]
-            self.twist_msg.twist.angular.x = msg.axes[STICK_ANGULAR_X]
-            self.twist_msg.twist.angular.y = msg.axes[STICK_ANGULAR_Y]
-            self.twist_msg.twist.angular.z = msg.axes[STICK_ANGULAR_Z]
+            twist_msg.twist.linear.x = msg.axes[STICK_TRANS_X]
+            twist_msg.twist.linear.y = msg.axes[STICK_TRANS_Y]
+            twist_msg.twist.linear.z = msg.axes[STICK_TRANS_Z]
+            twist_msg.twist.angular.x = msg.axes[STICK_ANGULAR_X]
+            twist_msg.twist.angular.y = msg.axes[STICK_ANGULAR_Y]
+            twist_msg.twist.angular.z = msg.axes[STICK_ANGULAR_Z]
             
         elif operation_type==robotStateTypes["joint_jog"]:
             # Making this a JointJog message type
-            self.joint_msg.joint_names[0] = "joint_1"
-            self.joint_msg.velocities[0] = msg.axes[0] # I think this is left joystick
+            joint_msg.joint_names[0] = "joint_1"
+            joint_msg.velocities[0] = msg.axes[0] # I think this is left joystick
             #elf.desired_joint_state = [0,0,0,0,0,0]
             
         elif operation_type==robotStateTypes["joint_state"]:
-            # Making this a JointState message type. 
-            # It takes the controller inputs and converts them to new joint positions based on the previous positions 
+            # Making this a JointState message type. It takes the controller inputs and converts them to new joint positions based on the previous positions 
             names = ["joint_1", "joint_2", "joint_3", "joint_4", "joint_5"]
-            self.joint_msg.name = names
+            joint_msg.name.append(names)           
             
-            # move up to 1 degree every step            
+            # move up to 1 degree every step 
+            
             joint_1 = self.parent.joint_step*msg.axes[0] # I think this is left joystick
-            joint_2 = self.parent.joint_step*msg.axes[2] # I think this is left joystick
-            joint_3 = self.parent.joint_step*msg.axes[3] # I think this is left joystick
-            joint_4 = self.parent.joint_step*msg.axes[5] # I think this is left joystick
             #if joint_1 > self.parent.joint_1_step_limit:
             #    joint_1 = self.parent.joint_1_step_limit
-            self.joint_vals = [joint_1, joint_2, joint_3, joint_4, 0.0]
-            #if self.parent.verbose: self.parent.logger("Received joint state values: {}".format(vals))
-
-            self.joint_msg.position = self.joint_vals
+            vals = [0,0,0,0,0]
+            joint_msg.position.append(0.0)
+            joint_msg.position.append(0.0)
+            joint_msg.position.append(0.0)
+            joint_msg.position.append(0.0)
+            joint_msg.position.append(0.0)
 
             
-        return use_twist
-    
+        return use_twist, twist_msg, joint_msg
     
     def update(self):
-        """ Function that when called publishes data to the publisher-specified topic for robot commands 
-        
-        
-        """
+    
         #if self.current_joint_state == self.previous_joint_state:
         #    # Don't publish old data, just skip
         #    return
@@ -367,17 +280,9 @@ class XboxController:
             # publish the JointState message
             self.joint_msg.header.frame_id = self.parent.frame_to_publish
             self.joint_msg.header.stamp = self.parent.get_clock().now().to_msg()
-            try:
-                self.parent.joint_pub.publish(self.joint_msg)
-                #temp = self.joint_msg
-                #self.parent.logger("joint msg: {}".format(temp))
-            except:
-                #print(type(self.joint_msg))
-                self.parent.logger("error")
-                #self.parent.logger(str(self.joint_msg))
-            
-        values = list(self.joint_msg.position)
-        return values, self.parent.current_joint_state
+            #self.parent.joint_pub.publish(self.joint_msg)
+
+        return [0,0,0,0,0,0], [0,0,0,0,0,0]
             
             
             

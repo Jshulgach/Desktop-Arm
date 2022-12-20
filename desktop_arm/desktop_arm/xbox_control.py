@@ -1,6 +1,80 @@
+import inputs
 from inputs import get_gamepad
 import math
 import threading
+
+
+# Microsoft X-Box 360 pad
+XINPUT_CODE_MAP = {
+    'ABS_X': 0,
+    'ABS_Y': 1,
+    'ABS_Z': 2,
+    'ABS_RX': 3,
+    'ABS_RY': 4,
+    'ABS_RZ': 5,
+    'ABS_HAT0X': 6,
+    'ABS_HAT0Y': 7,
+    'BTN_SOUTH': 0,
+    'BTN_EAST': 1,
+    'BTN_WEST': 2,
+    'BTN_NORTH': 3,
+    'BTN_TL': 4,
+    'BTN_TR': 5,
+    'BTN_START': 6,
+    'BTN_SELECT': 7,
+    'BTN_MODE': 8,
+    'BTN_THUMBL': 9,
+    'BTN_THUMBR':10
+}
+
+
+# Logitech Gamepad F710
+F710_CODE_MAP = {
+    'ABS_X': 0,
+    'ABS_Y': 1,
+    'ABS_Z': 2,
+    'ABS_RX': 3,
+    'ABS_RY': 4,
+    'ABS_RZ': 5,
+    'ABS_HAT0X': 6,
+    'ABS_HAT0Y': 7,
+    'BTN_SOUTH': 0,
+    'BTN_EAST': 1,
+    'BTN_NORTH': 2,
+    'BTN_WEST': 3,
+    'BTN_TL': 4,
+    'BTN_TR': 5,
+    'BTN_SELECT': 6,
+    'BTN_START': 7,
+    'BTN_MODE': 8,
+    'BTN_THUMBL': 9,
+    'BTN_THUMBR':10
+}
+
+# Microsoft X-Box One pad
+XONE_CODE_MAP = {
+    'ABS_X': 0,
+    'ABS_Y': 1,
+    'ABS_Z': 2,
+    'ABS_RX': 3,
+    'ABS_RY': 4,
+    'ABS_RZ': 5,
+    'ABS_HAT0X': 6,
+    'ABS_HAT0Y': 7,
+    'BTN_SOUTH': 0,
+    'BTN_EAST': 1,
+    'BTN_NORTH': 2,
+    'BTN_WEST': 3,
+    'BTN_TL': 4,
+    'BTN_TR': 5,
+    'BTN_SELECT': 6,
+    'BTN_START': 7,
+    'BTN_MODE': 8,
+    'BTN_THUMBL': 9,
+    'BTN_THUMBR':10
+}
+
+
 
 class XboxController(object):
     MAX_TRIG_VAL = math.pow(2, 8)
@@ -8,12 +82,12 @@ class XboxController(object):
 
     def __init__(self):
 
-        self.LeftJoystickY = 0
-        self.LeftJoystickX = 0
-        self.RightJoystickY = 0
-        self.RightJoystickX = 0
-        self.LeftTrigger = 0
-        self.RightTrigger = 0
+        self.LeftJoystickY = 0.0
+        self.LeftJoystickX = 0.0
+        self.RightJoystickY = 0.0
+        self.RightJoystickX = 0.0
+        self.LeftTrigger = 0.0
+        self.RightTrigger = 0.0
         self.LeftBumper = 0
         self.RightBumper = 0
         self.A = 0
@@ -24,31 +98,48 @@ class XboxController(object):
         self.RightThumb = 0
         self.Back = 0
         self.Start = 0
-        self.LeftDPad = 0
-        self.RightDPad = 0
-        self.UpDPad = 0
-        self.DownDPad = 0
+        self.LeftDPad = 0.0
+        self.RightDPad = 0.0
+        self.UpDPad = 0.0
+        self.DownDPad = 0.0
 
         self._monitor_thread = threading.Thread(target=self._monitor_controller, args=())
         self._monitor_thread.daemon = True
         self._monitor_thread.start()
 
 
-    def read(self): # return the buttons/triggers that you care about in this methode
+    def read(self): # return the buttons/triggers
         lx = self.LeftJoystickX
         ly = self.LeftJoystickY
+        lt = self.LeftTrigger
         rx = self.RightJoystickX
         ry = self.RightJoystickY
+        rt = self.RightTrigger
+        lrdpad = self.LeftDPad if self.LeftDPad else -self.RightDPad
+        updowndpad = self.UpDPad if self.UpDPad else -self.DownDPad
         a = self.A
         x = self.X
         y = self.Y
         b = self.B # b=1, x=2
         rb = self.RightBumper
         lb = self.LeftBumper
-        return [lx, ly, rx, ry, x, y, a, b, rb]
+        start = self.Start
+        back = self.Back
+        lthumb = self.LeftThumb
+        rthumb = self.RightThumb
+        return [lx, ly, lt, rx, ry, rt, lrdpad, updowndpad, a, b, x, y, lb,
+                rb, start, back, 0.0, lthumb, rthumb]
 
 
     def _monitor_controller(self):
+
+        self.gamepads = inputs.devices.gamepads
+        if len(self.gamepads) == 0:
+            print("Controller not plugged in yet")
+            while len(self.gamepads) == 0:
+                pass
+            
+
         while True:
             events = get_gamepad()
             for event in events:
@@ -95,7 +186,7 @@ class XboxController(object):
 
 
 
-
+# Run main if desired for testing controller inputs
 if __name__ == '__main__':
     joy = XboxController()
     while True:
