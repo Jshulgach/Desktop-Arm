@@ -60,6 +60,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(PROGRAMS
     desktop_arm/arduino_driver.py
     desktop_arm/robot_controller.py
+    desktop_arm/wireless_ros_server.py
     DESTINATION lib/${PROJECT_NAME}    
 )
 

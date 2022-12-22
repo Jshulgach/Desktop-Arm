@@ -47,10 +47,14 @@ def generate_launch_description():
     declared_arguments = []
     declared_arguments.append(DeclareLaunchArgument("fake_hardware", default_value="false", description="Launch RViz?"))
     declared_arguments.append(DeclareLaunchArgument("launch_rviz", default_value="false", description="Launch RViz?"))
+    declared_arguments.append(DeclareLaunchArgument("start_server", default_value="false", description="STart the socket server listenning for remote control commands from the ddns"))
+    declared_arguments.append(DeclareLaunchArgument("manual", default_value="true", description="Assume manual control into Raspberry pi with xbox controller, keyboard, etc."))
 
     #Initialize arguments
     enable_abb_hardware = LaunchConfiguration("fake_hardware")    
     launch_rviz = LaunchConfiguration("launch_rviz")
+    start_server = LaunchConfiguration("start_server")
+    manual_controller = LaunchConfiguration("manual")
      
     # Get parameters for the Servo node
     servo_yaml = load_yaml("desktop_arm","config/desktop-arm_simulated_config.yaml")
@@ -160,6 +164,7 @@ def generate_launch_description():
     
     joy_node = Node(package='joy',
         name='joy_node',
+        condition=IfCondition(manual_controller),
         executable='joy_node',
         output='screen',
     )
@@ -176,7 +181,7 @@ def generate_launch_description():
                     'eef_frame_ID':'end_effector',
                     'controller_type':'xbox',
                     'publishing_rate':4.0,
-                     #'controller_type':'keyboard',
+                    'robot_cmd_type':'joint_state',
                      #joints_yaml
         }],
     )
@@ -187,6 +192,13 @@ def generate_launch_description():
         name='arduino_node',
     )
     
+    remote_connection_node = Node(
+        package='desktop_arm',
+        condition=IfCondition(start_server),
+        executable='wireless_ros_server.py',
+        name='remote_comm_server_node',
+    )
+
     launch_nodes = [rviz_node,
                     #ros2_control_node,
                     joy_node,
@@ -198,6 +210,7 @@ def generate_launch_description():
                     #container,
                     desktop_arm_node,
                     arduino_node,
+                    remote_connection_node
                     ] #+ load_controllers
 
                     

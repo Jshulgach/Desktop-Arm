@@ -56,10 +56,13 @@ sudo apt dist-upgrade -y
 # Install build tools and moveit2
 sudo apt-get install -y ros-humble-moveit
 sudo apt-get install -y ros-humble-ros2-control ros-humble-ros2-controllers
-vcs import < Desktop-Arm/desktop_arm.repos
+
+# Just using keyboard teleop and joystick teleop
+# Also vcs commands are not suported in .sh files for some reason
+#vcs import < Desktop-Arm/desktop_arm.repos 
 
 # Install python pip installer and any additional python packages separated by space
-sudo apt install python3-pip
+sudo apt install python3-pip python-is-python3 
 pip install pyserial
 
 # Finally build workspace and any dependencies
@@ -67,6 +70,6 @@ cd ~/ros2_ws
 rosdep install -r --from-paths . --ignore-src --rosdistro $ROS_DISTRO -y
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install
 source ~/ros2_ws/install/setup.bash
-echo "~/ros2_ws/install/setup.bash" >> ~/.bashrc
+echo "source ~/ros2_ws/install/setup.bash" >> ~/.bashrc
 sudo apt-get update
 sudo apt-get upgrade -y

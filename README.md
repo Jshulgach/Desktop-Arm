@@ -57,7 +57,7 @@ These instructions were tested on Ubuntu 22.04.1 LTS running on a Raspberry Pi 4
  
 3. Install packages
    + Clone the Desktop Arm Github repository onto the specific `ros2_ws` folder which we create 
-   ~~~
+     ~~~
      mkdir -p ~/ros2_ws/src
      cd ~/ros2_ws/src
      git clone https://github.com/Jshulgach/Desktop-Arm.git
@@ -74,6 +74,14 @@ These instructions were tested on Ubuntu 22.04.1 LTS running on a Raspberry Pi 4
 <a name="arduino-installation"/>
 An Arduino Mega is used to fit with the RAMPS 1.4 Shield. Since the shield was designed to control a 3D printer or CNC machine with various stepper motor controllers and servos (along with limit switches and sensor readings), it was a great existing product to utilize. The primary microcontroller firmware needs to be flashed onto the Arduino Mega, but it is RECOMMENDED to flash some of the test scripts first to make sure the arm works, like the dancing demo!
 
+Add yourself to the dialout user group to enable usb serial communication. Replace USER with your username
+```
+sudo groupadd dialout
+sudo gpasswd -a USER dialout
+sudo usermod -a -G dialout USER
+sudo chmod a+rw /dev/ttyACM0
+```
+At this point the robot should be good to go!
 ---
 
 ## Arduino Dance Demo
@@ -81,18 +89,16 @@ An Arduino Mega is used to fit with the RAMPS 1.4 Shield. Since the shield was d
 
 Flash the 'desktop-arm-dancing-demo.ino' script onto the Arduino and enable power to the arm. It should slowly run through random positions with the joints and verify that the system works.
 
-![ ](tbd)
-
 --- 
 
 ## XBox Teleop Demo
 <a name="xbox-teleop">
 
-![ ](tbd)
-Run the teleop demo file by opening a terminal:
+Run the local teleop demo by plugging in an xbox controller to the Raspberry Pi, then either by teh desktop or ssh open a terminal and run the launch command:
 ```
 ros2 launch desktop_arm teleop.launch.py
 ```
+The robot should 
 ---
 
 Simulated Model 
@@ -122,7 +128,7 @@ Coming Soon!
 
 # Support the project
 
-This project is completely open source and free to all, but any help in terms of donations or advice is really appreciated. Thank you!
+This project is completely open source and free to all. Any help or advice is really appreciated. Thank you!
 
 
 

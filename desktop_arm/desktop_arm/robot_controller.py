@@ -27,11 +27,18 @@ from desktop_arm.arm_drivers import *
 
 
 class ControllerToRobot(Node):
-    def __init__(self, node_name='desktop_arm_controller_node', rate=1, verbose=False):
+    def __init__(self, node_name='desktop_arm_controller_node', rate=10, verbose=False):
         """This is the object that handles controller inputs and directs them to topics understood
         by the Servo Server for twist and joint changes. 
         
-        param: Node - just the argument passed through 
+        Parameters:
+        -----------
+        node_name : str
+            Specific name for ROS2 Node
+        rate : int
+            Publishing rate for running update commands
+        verbose : bool
+            Enable/disable verbose output for debugging on the terminal 
         
         """    
         super().__init__(node_name,
@@ -45,35 +52,37 @@ class ControllerToRobot(Node):
         self.current_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.previous_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         self.desired_joint_state = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self.robot_state_type = robotStateTypes["joint_state"]
+        #self.robot_state_type = robotStateTypes["joint_state"]
                 
         # declare ROS2 params, create publishers, subscribers, and timer
         self.init_ros_params()
         self.init_pub_sub()
         self.create_timer(1/self.rate, self.timer_callback) # frequency rate of running commands
-          
-        # Create controller object
-        # self.controller_type # assume XBOX controller
-        #self.controller = XboxController(self, robotStateTypes[robot_state_type])
-        self.user_controller = KeyboardController(self, self.robot_state_type)
+        self.robot_state_type = robotStateTypes[self.get_parameter("robot_cmd_type").value]
+        self.logger("Robot message operation type: {}".format(self.get_parameter("robot_cmd_type").value))
+        
+        # Create controller object, assume XBOX controller        
+        self.user_controller = XboxController(self, self.robot_state_type)
+        #self.user_controller = KeyboardController(self, self.robot_state_type)
 
 
         
         # Start servo service client
         #self.create_servo_client()
-        self.logger("Servo server node created!")
+        self.logger("Robot Controller node created!")
         
         
     def init_ros_params(self):
-        # Declare all ros2 params
+        """ Declare all ros2 params
+        """
         self.declare_parameter("base_frame_ID","base_link")      
         self.declare_parameter("eef_frame_ID","tool0")
-        self.declare_parameter("controller_type","xbox")  
+        self.declare_parameter("controller_type","xbox")
+        self.declare_parameter("robot_cmd_type","joint_state")
         self.declare_parameter("joint_step", 1.0) # in degrees
         self.declare_parameter("publishing_rate", 1.0) # safe, once every second
         self.declare_parameter("controller_joint_names", None)
-        
-        self.robot_state_type = robotStateTypes["joint_state"] # Will change to parameter passed
+        #self.robot_state_type = robotStateTypes["joint_state"] # Will change to parameter passed
 
         #self.joint_names = self.get_parameter("controller_joint_names").value
         #if self.joint_names is not None:
@@ -92,8 +101,9 @@ class ControllerToRobot(Node):
       
       
     def init_pub_sub(self):
-        # Set up all publishers and subscribers with configured topics.
-        self.twist_pub = self.create_publisher(TwistStamped, "/servo_server/delta_twist_cmds", 10)
+        """ Set up all publishers and subscribers with configured topics.
+        """
+        #self.twist_pub = self.create_publisher(TwistStamped, "/servo_server/delta_twist_cmds", 10) # Once the kinematics urdf file is fixed these will be enables
         #self.joint_pub = self.create_publisher(JointJog, "/servo_server/delta_joint_cmds", 10)
         self.joint_pub = self.create_publisher(JointState, "/joint_states", 10)
         self.collision_pub = self.create_publisher(PlanningScene, "/planning_scene", 10)
@@ -101,7 +111,8 @@ class ControllerToRobot(Node):
         
         
     def create_servo_client(self):
-        # Create a service client to start the ServoServer
+        """ Create a service client to start the ServoServer
+        """
         self.servo_start_client = self.create_client(Trigger,"/servo_server/start_servo")
         while not self.servo_start_client.wait_for_service(timeout_sec=1.0):
            self.logger('service not available, waiting again...')
@@ -109,11 +120,14 @@ class ControllerToRobot(Node):
 
 
     def logger(self, msg):
-        # Send message to terminal
+        """ Send message to terminal
+        """
         self.get_logger().info(str(msg))
         
         
     def timer_callback(self):
+        """ The callback function for the timer to update the system
+        """
         if self.verbose:
             self.get_logger().info("Updating system")
         
