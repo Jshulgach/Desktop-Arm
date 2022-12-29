@@ -13,21 +13,22 @@ Messy collection of controller types and enums ...
 """
 # ROS libraries
 import rclpy
+from std_msgs.msg import Int32
 from sensor_msgs.msg import Joy, JointState
 from control_msgs.msg import JointJog
 from geometry_msgs.msg import Twist, TwistStamped
+from xbox_control import XINPUT_CODE_MAP
 
 controllerTypes = {
     1: "keyboard",
     2: "xbox",
     }
-    
+
 controllerTopics = {
     "keyboard":"cmd_vel",
     "xbox":"/joy",
-    "spacemouse":"/spacenav/joy"
     }
-   
+
 robotStateTypes = {
     "joint_state":1,
     "joint_jog":2,
@@ -80,7 +81,12 @@ class KeyboardController:
             
         """
         self.parent.logger("Keyboard Controller")
-        self.info = {"pub_type": JointState, "pub_topic": "/joint_states", "sub_type": Twist, "sub_topic": "/cmd_vel"}
+        self.info = {"joint_pub_type": JointState, 
+                     "joint_pub_topic": "/joint_states", 
+                     "cmd_sub_type": Twist, 
+                     "cmd_sub_topic": "/cmd_vel",
+                     "gripper_sub_type": Int32,
+                     "gripper_sub_topic": "gripper_state"}
         self.parent = parent # In case parameters need to be shared between the main driver and the user controller
         self.use_twist = False
         self.twist_msg = None
@@ -109,7 +115,7 @@ class KeyboardController:
 
 
     def sub_CB(self, msg):
-        """ Convert the joystick message to Twist or JointJog (or JointState!) and publish
+        """ Convert the keyboard message to Twist or JointJog (or JointState!) and publish
         
         Parameters:
         -----------
@@ -133,7 +139,7 @@ class KeyboardController:
                 
 
     def convertKeyboardToCmd(self, msg, twist_msg, joint_msg, operation_type=robotStateTypes["joint_state"]):
-        """ Function that converts the controller input message into the ROS2 robot command message
+        """ Function that converts the keyboard input message into the ROS2 robot command message
         
         Parameters:
         -----------
@@ -209,13 +215,13 @@ class KeyboardController:
                 self.parent.joint_pub.publish(self.joint_msg)
 
         return self.joint_msg.position, self.joint_msg.position
-        
+
 
 class XboxController:
     def __init__(self, parent=None, operation_type=None, controller_info=None):
-        """ The xbox controller class that has all the methods and properties 
+        """ The xbox controller class that has all the methods and properties
         an xbox controller should have!
-        
+
         Parameters:
         -----------
         parent : object
@@ -224,19 +230,24 @@ class XboxController:
             Robot command message type 
         controller_into : str
             Keyboard ot joystick controller configured (not needed)
-            
+
         """
-        
-        self.info = {"pub_type": JointState, "pub_topic": "/joint_states", "sub_type": Joy, "sub_topic": "/joy"}
+        self.info = {"joint_pub_type": JointState,
+                     "joint_pub_topic": "/joint_states",
+                     "cmd_sub_type": Joy,
+                     "cmd_sub_topic": "/joy",
+                     "grip_pub_type":Int32,
+                     "grip_pub_topic":"gripper_state"}
         self.parent = parent # In case parameters need to be shared between the main driver and the user controller
         self.use_twist = False
         self.twist_msg = None
         self.joint_msg = None
-        
+        self.prev_grip_state = 0
+
         if operation_type==robotStateTypes["twist"]:
             if (self.parent is not None):
                 self.parent.logger("Twist commands not suppoted yet for this controller")
-        
+
         elif operation_type==robotStateTypes["joint_jog"]:
             self.joint_msg = JointJog()
             if (self.parent is not None):
@@ -247,9 +258,9 @@ class XboxController:
             self.parent.logger("Creating JointState type for controller")
             
             if (self.parent is not None):
-                self.sub = self.parent.create_subscription( self.info["sub_type"], self.info["sub_topic"], self.sub_CB, 10)
-                self.pub = self.parent.create_publisher( self.info["pub_type"], self.info["pub_topic"], 10)
-                
+                self.cmd_sub = self.parent.create_subscription( self.info["cmd_sub_type"], self.info["cmd_sub_topic"], self.sub_CB, 10)
+                self.joint_pub = self.parent.create_publisher( self.info["joint_pub_type"], self.info["joint_pub_topic"], 10)
+                self.grip_pub = self.parent.create_publisher(self.info["grip_pub_type"], self.info["grip_pub_topic"], 1)
         else:
             if self.parent:
                 self.parent.logger("Invalid operation type passed. User controller failed set up.")
@@ -322,9 +333,20 @@ class XboxController:
             stp = self.parent.joint_step
             joint_msg.position = [stp*msg.axes[0], stp*msg.axes[1], stp*msg.axes[3], stp*msg.axes[4], stp*msg.axes[5]]
 
-            
+            # Check gripper state and send gripper command 
+            btn_press = msg.buttons[XINPUT_CODE_MAP['BTN_EAST']]
+            msg = Int32()
+            if btn_press == 1 and self.prev_grip_state == 0:
+                self.prev_grip_state = 1
+                msg.data = 1
+                self.grip_pub.publish(msg)
+            elif btn_press == 0 and self.prev_grip_state == 1:
+                self.prev_grip_state = 0
+                msg.data = 0
+                self.grip_pub.publish(msg)
+
         return use_twist, twist_msg, joint_msg
-    
+
     def update(self):
         """ Function that publishes the ROS2 message to either the twist or joint message 
         command type
@@ -334,12 +356,12 @@ class XboxController:
             # publish the TwistStamped
             self.twist_msg.header.frame_id = self.parent.frame_to_publish
             self.twist_msg.header.stamp = self.parent.get_clock().now().to_msg()
-            self.parent.twist_pub.publish(self.twist_msg)
+            self.twist_pub.publish(self.twist_msg)
         else:
             # publish the JointState message
             self.joint_msg.header.frame_id = self.parent.frame_to_publish
             self.joint_msg.header.stamp = self.parent.get_clock().now().to_msg()
-            self.parent.joint_pub.publish(self.joint_msg)
+            self.joint_pub.publish(self.joint_msg)
 
         return [0,0,0,0,0,0], [0,0,0,0,0,0]
             

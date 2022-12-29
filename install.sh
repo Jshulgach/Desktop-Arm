@@ -63,7 +63,7 @@ sudo apt-get install -y ros-humble-ros2-control ros-humble-ros2-controllers
 
 # Install python pip installer and any additional python packages separated by space
 sudo apt install python3-pip python-is-python3 
-pip install pyserial
+pip install pyserial inputs
 
 # Finally build workspace and any dependencies
 cd ~/ros2_ws

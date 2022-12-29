@@ -17,7 +17,7 @@ import rclpy
 from rclpy.parameter import Parameter
 from rclpy.node import Node
 from std_srvs.srv import Trigger
-from std_msgs.msg import String
+from std_msgs.msg import String, Int32
 from geometry_msgs.msg import TwistStamped
 from control_msgs.msg import JointJog
 from moveit_msgs.msg import PlanningScene
@@ -98,18 +98,21 @@ class ControllerToRobot(Node):
         self.controller_type = self.get_parameter("controller_type").value
         self.joint_step = self.get_parameter("joint_step").value
         self.frame_to_publish = self.base_frame_ID
-      
-      
+
+
     def init_pub_sub(self):
         """ Set up all publishers and subscribers with configured topics.
         """
         #self.twist_pub = self.create_publisher(TwistStamped, "/servo_server/delta_twist_cmds", 10) # Once the kinematics urdf file is fixed these will be enables
         #self.joint_pub = self.create_publisher(JointJog, "/servo_server/delta_joint_cmds", 10)
-        self.joint_pub = self.create_publisher(JointState, "/joint_states", 10)
+        #self.joint_pub = self.create_publisher(JointState, "/joint_states", 10)
+
+        # The controller type will take care of publishers and subscribers for robot specific commands, but we need
+        # the planning scene and chatter debugging topic
         self.collision_pub = self.create_publisher(PlanningScene, "/planning_scene", 10)
         self.chatter_pub = self.create_publisher(String, "chatter", 10)
-        
-        
+        #self.gripper_pub = self.create_publisher(Int32, "gripper_state", 1)
+
     def create_servo_client(self):
         """ Create a service client to start the ServoServer
         """
@@ -123,8 +126,8 @@ class ControllerToRobot(Node):
         """ Send message to terminal
         """
         self.get_logger().info(str(msg))
-        
-        
+
+
     def timer_callback(self):
         """ The callback function for the timer to update the system
         """
@@ -133,24 +136,19 @@ class ControllerToRobot(Node):
         
         # The controller object should handle publishing to the right topic for robot movement
         self.current_joint_state, self.desired_joint_state = self.user_controller.update()
-        
-        
-        
 
-    
+
 def main(args=None):
     rclpy.init(args=args)
     node = ControllerToRobot()
-    
+
     while rclpy.ok():
         rclpy.spin(node)
-        
+
     # Explicitly destroy node
     node.destroy_node()
     rclpy.shutdown()
-    
+
 
 if __name__=="__main__":
     main()
-        
-    
