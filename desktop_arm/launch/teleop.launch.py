@@ -209,7 +209,7 @@ def generate_launch_description():
                     robot_state_publisher,
                     #container,
                     desktop_arm_node,
-                    arduino_node,
+                    #arduino_node,
                     remote_connection_node
                     ] #+ load_controllers
 

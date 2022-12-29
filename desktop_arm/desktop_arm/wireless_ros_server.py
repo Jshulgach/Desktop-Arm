@@ -169,7 +169,7 @@ def main(args=None):
 
     #node = None
     rclpy.init(args=args)
-    node = Listener()
+    node = Listener(verbose=False)
     try:
         while rclpy.ok():
             rclpy.spin(node)
