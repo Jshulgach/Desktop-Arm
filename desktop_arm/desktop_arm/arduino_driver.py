@@ -148,25 +148,32 @@ class ArduinoTalker(Node):
         #print("joint state message: {}".format(self.joint_states))
         if True:
             if self.joint_states != self.prev_joint_states:
-                #if self.ser and len(self.joint_states)>1:
-                #self.logger("joint state message type: {}".format(type(self.joint_states)))
-                self.prev_joint_states = self.joint_states
-                robot_msg = 'M:' + ','.join(map(str, self.joint_states))
-                self.logger("Sending {} to Arduino".format(robot_msg))
-                self.send(robot_msg, 'utf-8')
+                self.moveMotor(self.joint_states)
                 #self.read(read_loop=10)
 
 
         # Handle gripper commands
         if True:
             if self.grip_state != self.prev_grip_state:
-                #self.logger("Sending gripper state {} to microcontroller".format(self.grip_state))
+                self.moveGripper(self.grip_state)
+                #self.read(read_loop=10)
+
+
+    def moveMotor(self, joint_states):
+        # Send 'movemotor' command by checking each joint state and sending new positions
+        for i in range(len(joint_states)):
+            if self.joint_states[i] != self.prev_joint_states[i]:
+                robot_msg = 'movemotor ' + str(i+1) + ' ' + str(joint_states[i]) + '\n'       
+                self.logger("Sending {} to Arduino".format(robot_msg))
+                self.send(robot_msg, 'utf-8')
+                self.prev_joint_states[i] = self.joint_states[i]
+
+    def moveGripper(self, state):
                 robot_msg = 'G:' + str(self.grip_state)
                 self.logger("Sending {} to Arduino".format(robot_msg))
                 self.prev_grip_state = self.grip_state
-                self.send(robot_msg, 'utf-8')
-                #self.read(read_loop=10)
-
+                self.send(robot_msg, 'utf-8')        
+                
 
     def send(self, msg, msg_type='ascii'):
         """ Function that sends a string message to the connected serial port by 
