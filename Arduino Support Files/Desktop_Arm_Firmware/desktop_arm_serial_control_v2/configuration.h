@@ -37,7 +37,7 @@
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
 #define BAUDRATE 9600
-#define CONNECT_LED_PIN_OUT AUX4_18_PIN
+#define CONNECT_LED_PIN_OUT 16 // Also AUX4_18_PIN on pin config
 
 //===========================================================================
 //============================= PID Settings ================================
@@ -67,6 +67,9 @@
 #define USE_JOINT4_PLUG
 #define USE_JOINT5_PLUG
 
+
+/* Fan Control */
+#define ENABLE_FAN true
 /**
  * Stepper Drivers
  *
@@ -106,9 +109,9 @@
 #define JOINT2_MIN_POS 0
 #define JOINT3_MIN_POS 0
 #define JOINT4_MIN_POS 0
-#define JOINT0_MAX_POS 200
-#define JOINT1_MAX_POS 200
-#define JOINT2_MAX_POS 300
+#define JOINT0_MAX_POS 2000
+#define JOINT1_MAX_POS 2000
+#define JOINT2_MAX_POS 3000
 #define JOINT3_MAX_POS 2000
 #define JOINT4_MAX_POS 4000
 
@@ -148,32 +151,17 @@
 #define JOINT4_REV_DISTANCE 8.0
 
 // Define the servo positions for the open and close states
-#define GRIPPER_OPEN_POS 90
-#define GRIPPER_CLOSE_POS 190
+#define GRIPPER_OPEN_POS 40
+#define GRIPPER_CLOSE_POS 300
 
 //Set these to true to diable certain joints, especially for debugging
 #define JOINT0_DISABLED false
-#define JOINT1_DISABLED false
+#define JOINT1_DISABLED true // Disabled until tested on 2 stepper motors not connected to the robot
 #define JOINT2_DISABLED false
 #define JOINT3_DISABLED false
 #define JOINT4_DISABLED false
 
 #define PRESSED_STATE LOW // Defining the state of the limit switches depending on wiring
-/**
- * Number of servos
- *
- * For some servo-related options NUM_SERVOS will be set automatically.
- * Set this manually if there are extra servos needing manual control.
- * Set to 0 to turn off servo support.
- */
-//#define NUM_SERVOS 3 // Note: Servo index starts with 0 for M280-M282 commands
-
-// (ms) Delay before the next move will start, to give the servo time to reach its target angle.
-// 300ms is a good value but you can try less delay.
-// If the servo can't reach the requested position, increase it.
-#define SERVO_DELAY { 300 }
-
-
 
 /**
  * RGB LED / LED Strip Control

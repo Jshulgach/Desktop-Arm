@@ -266,6 +266,14 @@ void parseCommand()
     {
         setDebugOff();
     }
+    else if (strcmp(incomingParams[0], "enablefan") == 0)
+    {
+        enableFan();
+    }
+    else if (strcmp(incomingParams[0], "disablefan") == 0)
+    {
+        disableFan();
+    }
     else
     {
         //no command exists
@@ -376,6 +384,16 @@ void enableMotor()
     {
         Serial.println("Invalid number of parameters");
     }    
+}
+
+void enableFan()
+{
+    digitalWrite(FAN_0_PIN, HIGH);  
+}
+
+void disableFan()
+{
+    digitalWrite(FAN_0_PIN, LOW);  
 }
 
 void disableMotor()
@@ -689,7 +707,7 @@ void setupPins()
         steppers[i]->setEnablePin(jointEnablePin[i]);
         pinMode(homeSwitchPin[i], INPUT); // limit switches
     }
-    //pinMode(JOINT0_ENABLE_PIN, OUTPUT);   
+    pinMode(FAN_0_PIN, OUTPUT);    // Internal fan control
     //pinMode(JOINT1_ENABLE_PIN, OUTPUT);   
     //pinMode(JOINT2_ENABLE_PIN, OUTPUT);   
     //pinMode(JOINT3_ENABLE_PIN, OUTPUT);   
@@ -719,6 +737,7 @@ void setupJoints()
 {
     for (int i = 0; i < numSteppers; ++i)
     {
+        steppers[i]->setPinsInverted(false, false, true); 
         steppers[i]->setAcceleration(maxMotorAcceleration[i]);
         steppers[i]->setMaxSpeed(maxMotorSpeed[i]);
         steppers[i]->setSpeed(maxMotorSpeed[i]);
@@ -741,221 +760,3 @@ void setupServos() {
   // Just one servo controlling gripper
   gripper.attach(SERVO0_PIN);
 }
-
-/*
-void update_system()
-{
-
-  // Check limit switches for all joints 
-  joint0Switch.loop(); // MUST call the loop() function first for switches
-  if (joint0Switch.getState() == PRESSED_STATE){ 
-    joint0Stepper.stop();  
-    //Serial.println("Limit switch for Joint 0 pressed");
-  } else {
-    joint0Stepper.run();
-  }
-
-  joint1Switch.loop();
-  if (joint1Switch.getState() == PRESSED_STATE){
-    joint1Stepper.stop(); 
-    //Serial.println("Limit switch for Joint 1 pressed");
-  } else {
-    joint1Stepper.run();
-  }  
-  joint2Switch.loop();
-  if (joint2Switch.getState() == PRESSED_STATE){
-    joint2Stepper.stop();
-    //Serial.println("Limit switch for Joint 2 pressed");
-  } else {
-    joint2Stepper.run();
-  }  
-  
-  joint3Switch.loop();
-  if (joint3Switch.getState() == PRESSED_STATE){
-    joint3Stepper.stop();
-    //Serial.println("Limit switch for Joint 3 pressed");
-  } else {
-    joint3Stepper.run();
-  }  
-
-  joint4Switch.loop();
-  if (joint4Switch.getState() == PRESSED_STATE){
-    joint4Stepper.stop();
-    //Serial.println("Limit switch for Joint 4 pressed");           
-  } else {
-    joint4Stepper.run();
-  }  
-}
-
-void zero_all_joints()
-{
-  // Spins the joints until the limit switches are activated to establish the joint limits
-  
-  //Right now just have joint 2 set up
-  while (joint2SwitchPressed==false) {
-    joint2Switch.loop(); // MUST call the loop() function first
-    if (joint2SwitchPressed==false){
-      int state = joint2Switch.getState();
-      if(state == HIGH)  {
-        //joint2Stepper.setSpeed(1000);
-        joint2Stepper.runSpeed();
-      } else {
-        joint2SwitchPressed = true;
-        joint2Stepper.stop();
-      }
-    }    
-  }
-}
-
-
-void parse_multistepper_command() 
-{
-  // Utilizing MultiSpetter library, we can parse all the motor commands and update all the joints at once
-
-  if (Serial.available()) {
-    if (Serial.find(":")) {
-      Serial.println("grabbing joint0 value");
-      joint0_prev_pos = update_joint(&JOINT0_STATE, JOINT0_MIN_POS, JOINT0_MAX_POS, JOINT0_DISABLED);
-      joint0Stepper.moveTo(joint0_prev_pos);
-    }
-    if (Serial.find(",")) {
-      joint1_prev_pos = update_joint(&JOINT1_STATE, JOINT1_MIN_POS, JOINT1_MAX_POS, JOINT1_DISABLED);
-      joint1Stepper.moveTo(joint1_prev_pos);
-    }
-    if (Serial.find(",")) {
-      joint2_prev_pos = update_joint(&JOINT2_STATE, JOINT2_MIN_POS, JOINT2_MAX_POS, JOINT2_DISABLED);
-      joint2Stepper.moveTo(joint2_prev_pos);
-    }
-    if (Serial.find(",")) {
-      joint3_prev_pos = update_joint(&JOINT3_STATE, JOINT3_MIN_POS, JOINT3_MAX_POS, JOINT3_DISABLED);
-      joint3Stepper.moveTo(joint3_prev_pos);
-    }
-    if (Serial.find(",")) {
-      joint4_prev_pos = update_joint(&JOINT4_STATE, JOINT4_MIN_POS, JOINT4_MAX_POS, JOINT4_DISABLED);
-      joint4Stepper.moveTo(joint4_prev_pos);
-    }
-    if (VERBOSE==true) { 
-      Serial.print("NEW JOINT_STATE: ");
-      Serial.print(joint0_prev_pos);
-      Serial.print(",");
-      Serial.print(joint1_prev_pos);
-      Serial.print(",");
-      Serial.print(joint2_prev_pos);
-      Serial.print(",");
-      Serial.print(joint3_prev_pos);
-      Serial.print(",");
-      Serial.println(joint4_prev_pos);
-    }  
-
-    //joint4Stepper.moveTo(1000);
-
-    //joint0Stepper.runSpeed();
-    //joint1Stepper.runSpeed();
-    //joint2Stepper.runSpeed();
-    //joint3Stepper.runSpeed();
-    //joint4Stepper.runSpeed();
-    //delay(1000);
-    //steppers.moveTo(positions);
-    //steppers.run();
-    //steppers.runSpeedToPosition(); // Blocks until all are in position
-  }
-}
-
-int update_joint(int *JOINT_STATE, int JOINT_MIN_POS, int JOINT_MAX_POS, bool JOINT_DISABLED)
-{
-  // Update a particular joint 
-  int joint_pos = 0;
-  if (Serial.available()) {
-    joint_pos = convert_deg_to_joint(Serial.parseInt());
-    if (VERBOSE==true){Serial.print("value received: ");};
-    if (VERBOSE==true){Serial.println(joint_pos);};
-    if (JOINT_DISABLED) {
-      if (VERBOSE==true){Serial.println("JOINT DISABLED");};
-      joint_pos = 0;      
-    } else {
-      // Assume the starting position is halfway between min and max position.
-      // Check that the desired value doesn't go past the min limit
-      //if (JOINT_STATE + joint_pos < JOINT_MIN_POS) { // Check that the desired value doesn't go past the min limit
-      //  joint_pos = JOINT_MIN_POS - JOINT_STATE;
-      //}
-      //else if (JOINT_STATE + joint_pos > JOINT_MAX_POS) { // Check that the desired value doesn't go past the max limit
-      //  joint_pos = JOINT_MAX_POS - JOINT_STATE;
-      //}
-      // Update internal joint state
-      JOINT_STATE = JOINT_STATE + joint_pos;
-    }
-  }
-  return joint_pos;
-}
-
-int convert_deg_to_joint(int joint_pos) 
-{
-  // Convert the input value to the robot readable stepper position values
-  //TO-DO
-  return joint_pos;
-}
-
-void parse_motor_command() 
-{
-  // Assumes that the resulting data incoming will be 5 joint positions, separated by commas
-  if (Serial.available()) {
-    if (Serial.find(":")) {
-      int joint0_pos = Serial.parseInt();
-      if (!JOINT0_DISABLED) {
-        if (VERBOSE==true){Serial.println("M0");};
-        move_joint(joint0Stepper, joint0_pos, JOINT0_MIN_POS, JOINT0_MAX_POS);
-      }
-    }
-  }
-  if (Serial.available()) {
-     if (Serial.find(",")) {
-      int joint1_pos = Serial.parseInt();
-      if (!JOINT1_DISABLED) {
-        if (VERBOSE==true){Serial.println("M1");};
-        move_joint(joint1Stepper, joint1_pos, JOINT1_MIN_POS, JOINT1_MAX_POS);
-      }
-    }
-  }
-  if (Serial.available()) {
-     if (Serial.find(",")) {
-      int joint2_pos = Serial.parseInt();
-      if (!JOINT2_DISABLED) {
-        if (VERBOSE==true){Serial.println("M2");};
-        move_joint(joint2Stepper, joint2_pos, JOINT2_MIN_POS, JOINT2_MAX_POS);
-      }
-    }
-  }
-  if (Serial.available()) {
-    if (Serial.find(",")) {
-      int joint3_pos = Serial.parseInt();
-      if (!JOINT3_DISABLED) {
-        if (VERBOSE==true){Serial.println("M3");};
-        move_joint(joint3Stepper, joint3_pos, JOINT3_MIN_POS, JOINT3_MAX_POS);
-      }
-    }
-  }
-  if (Serial.available()) {
-    if (Serial.find(",")) {
-      int joint4_pos = Serial.parseInt();
-      if (!JOINT4_DISABLED) {
-        if (VERBOSE==true){Serial.println("M4");};
-        move_joint(joint4Stepper, joint4_pos, JOINT4_MIN_POS, JOINT4_MAX_POS);
-      }
-    }
-  }
-}
-
-void move_joint(AccelStepper stepper, int pos, int min_pos, int max_pos) 
-{
-  
-  if (pos > max_pos) { pos = max_pos;};
-  if (pos < min_pos) { pos = min_pos;};
-  
-  while(stepper.currentPosition() != pos)
-  {
-    stepper.setSpeed(500);
-    stepper.runSpeed();
-  }
-}
-
-*/

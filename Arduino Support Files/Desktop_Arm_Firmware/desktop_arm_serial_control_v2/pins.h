@@ -144,10 +144,10 @@
   #define TEMP_BED_PIN                        14  // Analog Input
 #endif
 
-
-
-
-
+//
+// Fans
+//
+#define FAN_0_PIN 9 // Also #define AUX4_17_PIN
 
 
 #if HAS_TMC_UART
