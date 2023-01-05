@@ -25,7 +25,7 @@ from std_msgs.msg import Header
 class Listener(Node):
     def __init__(self,
                  node_name='comm_server_node',
-                 ip='192.168.1.180',
+                 ip='192.168.1.180', #'deskoparm.ddns.net',
                  port=10000,
                  publish_topic='/joy',
                  device_name='Microsoft X-Box 360 pad',

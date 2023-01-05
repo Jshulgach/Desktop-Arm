@@ -31,9 +31,9 @@ def degToRad(val):
 
 class ArduinoTalker(Node):
     def __init__(self, node_name='arduino_node',
-                       rate=10,
+                       rate=30,
                        COM='/dev/ttyACM0',
-                       baudrate=9600, #115200,
+                       baudrate=115200,
                        verbose=False
                 ):
         """This class controls communication to the microcontroller handling stepper
@@ -59,7 +59,7 @@ class ArduinoTalker(Node):
         self.COM = COM
         self.baudrate = baudrate
         self.verbose = verbose
-        self.step = 5
+        self.step = 1
         self.grip_sub = self.create_subscription(Int32, "gripper_state", self.gripper_CB, 1)
         self.joint_sub = self.create_subscription(JointState, "joint_states", self.joint_state_CB, 1)
         self.joint_states = [0.0, 0.0, 0.0, 0.0, 0.0]
@@ -137,7 +137,7 @@ class ArduinoTalker(Node):
         if self.ser.inWaiting() > 0:
             #print()
             #self.last_msg = self.ser.readline().decode('utf8')
-            self.last_msg = self.ser.readline(self.ser.inWaiting())
+            self.last_msg = self.ser.readline(self.ser.inWaiting()).decode('ascii')
             print(self.last_msg)
 
     def command_timer_CB(self):
@@ -149,31 +149,29 @@ class ArduinoTalker(Node):
         if True:
             if self.joint_states != self.prev_joint_states:
                 self.moveMotor(self.joint_states)
-                #self.read(read_loop=10)
 
 
         # Handle gripper commands
         if True:
             if self.grip_state != self.prev_grip_state:
                 self.moveGripper(self.grip_state)
-                #self.read(read_loop=10)
 
 
     def moveMotor(self, joint_states):
         # Send 'movemotor' command by checking each joint state and sending new positions
         for i in range(len(joint_states)):
             if self.joint_states[i] != self.prev_joint_states[i]:
-                robot_msg = 'movemotor ' + str(i+1) + ' ' + str(joint_states[i]) + '\n'       
+                robot_msg = 'movemotor ' + str(i+1) + ' ' + str(joint_states[i]) + '\n'
                 self.logger("Sending {} to Arduino".format(robot_msg))
                 self.send(robot_msg, 'utf-8')
                 self.prev_joint_states[i] = self.joint_states[i]
 
     def moveGripper(self, state):
-                robot_msg = 'G:' + str(self.grip_state)
+                robot_msg = 'gripper ' + str(self.grip_state) + '\n'
                 self.logger("Sending {} to Arduino".format(robot_msg))
                 self.prev_grip_state = self.grip_state
-                self.send(robot_msg, 'utf-8')        
-                
+                self.send(robot_msg, 'utf-8')
+
 
     def send(self, msg, msg_type='ascii'):
         """ Function that sends a string message to the connected serial port by 
@@ -191,7 +189,7 @@ class ArduinoTalker(Node):
         time.sleep(0.01)
 
 
-    def read(self, msg_type='utf-8', read_loop=1):
+    def read(self, msg_type='ascii', read_loop=1):
         """ Read the bytes and convert from binary array to ASCII
         """
         #self.ser.reset_input_buffer()
