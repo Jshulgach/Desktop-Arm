@@ -36,25 +36,18 @@
  *
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
  */
-#define BAUDRATE 9600
+#define BAUDRATE 115200
 #define CONNECT_LED_PIN_OUT 16 // Also AUX4_18_PIN on pin config
 
 //===========================================================================
 //============================= PID Settings ================================
 //===========================================================================
 // PID Tuning Guide here: https://reprap.org/wiki/PID_Tuning
-
-// Comment the following line to disable PID and enable bang-bang.
-//#define PID
-//#define BANG_MAX 255     // Limits current to nozzle while in bang-bang mode; 255=full current
-//#define PID_MAX BANG_MAX // Limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
+#define USE_PID false // Set to true to use PID tuning for joint positons
+#define Kp  22.20
+#define Ki   1.08
+#define Kd 114.00
 //#define PID_K1 0.95      // Smoothing factor within any PID loop
-
-//#if ENABLED(PID)
-//    #define DEFAULT_Kp  22.20
-//    #define DEFAULT_Ki   1.08
-//    #define DEFAULT_Kd 114.00
-//#endif // PID
 
 // Define endstops that the robot will use here. Usually want to use at least one per joint to 
 // protect the robot from collisions. 
@@ -109,8 +102,8 @@
 #define JOINT2_MIN_POS 0
 #define JOINT3_MIN_POS 0
 #define JOINT4_MIN_POS 0
-#define JOINT0_MAX_POS 2000
-#define JOINT1_MAX_POS 2000
+#define JOINT0_MAX_POS 14000
+#define JOINT1_MAX_POS 10000
 #define JOINT2_MAX_POS 3000
 #define JOINT3_MAX_POS 2000
 #define JOINT4_MAX_POS 4000
@@ -128,36 +121,29 @@
 #define JOINT4_MAX_ACCELERATION 40000
 
 // Define the homing buffer for each joint (how much to move forward after triggering homing/limit switch)
-#define JOINT0_HOMING_BUFFER 5.0 // units: mm. 
+#define JOINT0_HOMING_BUFFER 5.0 // units: deg. 
 #define JOINT1_HOMING_BUFFER 5.0
 #define JOINT2_HOMING_BUFFER 5.0
 #define JOINT3_HOMING_BUFFER 5.0
 #define JOINT4_HOMING_BUFFER 5.0
 
-// Define the number of steps each stepper motor needs to take to make a full revolution
+// Define the number of steps each stepper motor needs to take to make a full joint revolution 
 // This should also match the pin configuration on the RAMPS1.4 board for the motor drivers
-#define JOINT0_STEPS 1600 // 1/8 microstepping
-#define JOINT1_STEPS 1600
-#define JOINT2_STEPS 1600
-#define JOINT3_STEPS 1600
-#define JOINT4_STEPS 1600
-
-// Define the distance travelled after one full revolution for each stepper motor
-// Ex: 2 mm pitch w/ 4 start lead screw = 8 mm lead (or 8 mm traveled per lead screw revolution)
-#define JOINT0_REV_DISTANCE 8.0
-#define JOINT1_REV_DISTANCE 8.0
-#define JOINT2_REV_DISTANCE 8.0
-#define JOINT3_REV_DISTANCE 8.0
-#define JOINT4_REV_DISTANCE 8.0
+// This can also be calibrated 
+#define JOINT0_REV_STEPS 16000 // 1/8 microstepping
+#define JOINT1_REV_STEPS 16000 // 2 jumpers, 8 degrees 
+#define JOINT2_REV_STEPS 16000
+#define JOINT3_REV_STEPS 16000 // 300 with 2-jumper-pin setup (what is the microstepping resolution?)
+#define JOINT4_REV_STEPS 16000
 
 // Define the servo positions for the open and close states
-#define GRIPPER_OPEN_POS 40
+#define GRIPPER_OPEN_POS 90
 #define GRIPPER_CLOSE_POS 300
 
 //Set these to true to diable certain joints, especially for debugging
 #define JOINT0_DISABLED false
 #define JOINT1_DISABLED true // Disabled until tested on 2 stepper motors not connected to the robot
-#define JOINT2_DISABLED false
+#define JOINT2_DISABLED true
 #define JOINT3_DISABLED false
 #define JOINT4_DISABLED false
 
