@@ -1,4 +1,4 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License: Mozilla](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 # Desktop-Robotic-Arm
 ![](https://github.com/Jshulgach/Desktop-Arm/blob/master/media/solidworks-full-arm.PNG)
 
@@ -89,9 +89,10 @@ These instructions were tested on Ubuntu 22.04.1 LTS running on a Raspberry Pi 4
 
 ## Arduino Setup:
 <a name="arduino-setup"/>
-An [Arduino Mega](https://duino4projects.com/arduino-mega-pinout-diagram/) microcontroller is used to fit with the RAMPS 1.4 Shield. Since the shield was designed to control a 3D printer or CNC machine with various stepper motor controllers and servos (along with limit switches and sensor readings), it was a great existing product to utilize. The primary microcontroller firmware needs to be flashed onto the Arduino Mega, but it is RECOMMENDED to flash some of the test scripts first to make sure the arm works, like the dancing demo!
 
-   + Add yourself to the dialout user group to enable usb serial communication. Replace USER with your username
+An [Arduino Mega](https://diyi0t.com/arduino-mega-tutorial/) microcontroller is used to fit with the [RAMPS 1.4 Shield](https://reprap.org/wiki/RAMPS_1.4). Since the shield was designed to control a 3D printer or CNC machine with various stepper motor controllers and servos (along with limit switches and sensor readings), it was a great existing product to utilize. The primary microcontroller firmware needs to be [uploaded](https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-uploading-a-sketch) onto the Arduino Mega, but it is RECOMMENDED to flash some of the test scripts first to make sure the arm works, like the dancing demo!
+
+   + Add yourself to the dialout user group to enable usb serial communication. Replace USER with your username. You will need to log out and log in again for this change to take effect.
      ~~~
      sudo groupadd dialout
      sudo gpasswd -a USER dialout
