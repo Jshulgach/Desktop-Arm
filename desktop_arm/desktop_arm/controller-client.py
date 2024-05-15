@@ -34,10 +34,10 @@ class ControllerClient():
     def __init__(self,
                  node_name='xbox_controller_broadcaster',
                  rate=1,
-                 ip='localhost',
+                 ip='desktoparm.ddns.net',
                  port=10000,
                  control_type='Microsoft X-Box 360 pad',
-                 verbose=True
+                 verbose=False
                  ):
         """
         This node handles server or client communication between 2 computers using
@@ -72,10 +72,9 @@ class ControllerClient():
 
         # Create controller object with button event handling
         self.xbox = XboxController()
-        if self.verbose: print("Joystick control enabled. Connect a joystick controller to transmit...")
+        print("Joystick controller enabled")
 
         # Attempt to connect to server
-        if self.verbose: print('Connecting to {} port {}'.format(self.ip, self.port))
         self.connect(self.ip, self.port)
 
 
@@ -95,18 +94,18 @@ class ControllerClient():
                 if self.verbose: print('sending {!r}'.format(message))
             
             except KeyboardInterrupt:
-                if self.verbose: print("KeyboardInterrupt detected")
+                print("KeyboardInterrupt detected")
                 self.connected = False
                 self.timer.stop()        
 
             except socket.error:
-                if self.verbose: print('Connection to the server lost, attempting to reconnect...')
+                print('Connection to the server lost, attempting to reconnect...')
                 self.connected = False
                 self.timer.stop()
                 self.connect(self.ip, self.port)
     
 
-    def connect(self, ip='192.168.1.180', port=10000):
+    def connect(self, ip=None, port=None):
         """ Function that makes an attempt to connect the socket to the port where the server
         is listening. If successful, it starts the timer object to send data to IP address at specified rate
 
@@ -118,20 +117,30 @@ class ControllerClient():
             Port number specific to server
 
         """
+        if ip==None: ip = self.ip
+        if port==None: port = self.port
         while not self.connected:
             try:
+                print('Connecting to {} port {}'.format(self.ip, self.port))
                 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Create a TCP/IP socket.
+                #self.sock.settimeout(5)
                 server_address = (ip, port)
                 self.sock.connect(server_address)
+                #self.sock.settimeout(None)
                 self.connected = True
-                if self.verbose: print('Connection to server at {} successful'.format(server_address))
+                print('Connection to server at {} successful'.format(server_address))
                 self.timer.start()
     
             except socket.error:
-                self.connected = False
-                self.timer.stop()
+                pass
+                #self.timer.stop()
                 #if self.verbose: print('Connection to the server lost, attempting to reconnect...')
                 #self.connect(self.ip, self.port)
+
+            except KeyboardInterrupt:
+                print("KeyboardInterrupt detected")
+                self.connected = False
+                self.timer.stop()     
 
         
     def disconnect(self):
